@@ -1,0 +1,100 @@
+UI Layout: “CodeMate – Minecraft Mod Workshop”
+
+1. Main Layout – 4-Pane Workspace
+
++------------------------------------------------------------------------------------+
+|                                 Top Navigation Bar                                |
+|  [Project Name] | [Run Mod] [Build Mod] [Save] [Settings] [Docs] [Toggle Theme]   |
++------------------------------------------------------------------------------------+
+
+| File Tree (Left)     | Code Editor (Center)             | Claude Chat + Log Panel (Right)       |
+|----------------------|----------------------------------|----------------------------------------|
+| src/                 | // Java Code with syntax         | Claude 3.7 Assistant                   |
+|  └── main/           | // highlighting + autocompletion| [User] Create a custom sword          |
+|      └── java/       |                                  | [Claude] Generated code in MySword.java|
+|          └── ...     |                                  | [User] I'm getting a null error...    |
+|  └── resources/      |                                  | [Claude] Here's the fix...            |
+|      └── models/     |                                  | [Command Buttons]                     |
+|      └── lang/       |                                  |  ☐ Auto-Explain   ☐ Ask Before Editing |
+|      └── ...         |                                  |  [Continue Dev] [Fix Error] [Reset]   |
+
++------------------------------------------------------------------------------------+
+| Console Log Panel (Bottom - Toggleable)                                            |
+| > BUILD SUCCESSFUL                                                                 |
+| > NullPointerException at CorruptOreBlock.java:42                                  |
+| > Mod registered successfully: Obsidian Mod                                        |
++------------------------------------------------------------------------------------+
+
+
+---
+
+2. Key Features by Panel
+
+Left – File Tree
+
+Project folder structure (src/main/java, resources/lang, models, etc.)
+
+Buttons: [+ New File] [+ New Block/Item/Entity]
+
+Drag-and-drop or double-click to open in editor
+
+
+Center – Code Editor
+
+Monaco-based editor (like VS Code)
+
+Syntax highlighting for Java, JSON, TOML
+
+Claude-generated code inserts appear with "ghost text" or hover tooltips
+
+Change history + undo/redo
+
+Auto-save & build-on-save toggle
+
+
+Right – Claude AI Panel
+
+Claude chat box: send prompts like "Add a GUI", "Fix this crash", "Register loot table"
+
+Output shown with syntax blocks and explanations
+
+Claude can click [Edit Code] or [Suggest Fix] to apply changes to live files
+
+Options:
+
+Auto-comment inserted code
+
+Ask before overwriting
+
+Keep track of progress checklist
+
+
+
+Bottom – Console Output
+
+Live Gradle build logs and stack traces
+
+Clickable errors that auto-jump to line in editor
+
+Claude can interpret and respond to log output
+
+
+
+---
+
+3. Bonus Features to Add Later
+
+Sidebar checklist of mod goals: “Item registered”, “Block added”, “Recipes pending…”
+
+Claude memory window: summary of mod progress
+
+Claude Action Buttons inside chat:
+
+[Add Recipe]
+
+[Explain File]
+
+[Upgrade to 1.21.5 API]
+
+
+Live Preview JSON Viewer: Show models/blockstates with 3D cube preview
