@@ -69,9 +69,8 @@ export default function SimpleClaudeAssistant({
   const [isListening, setIsListening] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const speechSynthesis = window.speechSynthesis;
   const { toast } = useToast();
-
+  
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -79,95 +78,72 @@ export default function SimpleClaudeAssistant({
   
   // Function to stop speaking
   const stopSpeaking = () => {
-    if (speechSynthesis) {
-      speechSynthesis.cancel();
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
       setIsSpeaking(false);
     }
   };
   
   // Function to speak text aloud
   const speakText = (text: string) => {
+    console.log("Starting speech synthesis...");
+    
     // Don't speak code blocks
     const cleanText = text.replace(/```[\s\S]*?```/g, "Code block omitted for speech.");
     
-    if (speechSynthesis) {
-      // Stop any current speech
-      stopSpeaking();
-      
-      // Create a toast notification
+    if (!window.speechSynthesis) {
+      console.error("Speech synthesis not available in this browser");
       toast({
-        title: "Speaking...",
-        description: "Text-to-speech activated",
-        duration: 3000,
+        title: "Speech Error",
+        description: "Speech synthesis not supported in this browser",
+        variant: "destructive",
       });
-      
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-      
-      // Set up event handlers
-      utterance.onstart = () => {
-        console.log("Speech started");
-        setIsSpeaking(true);
-      };
-      
-      utterance.onend = () => {
-        console.log("Speech ended");
-        setIsSpeaking(false);
-      };
-      
-      utterance.onerror = (e) => {
-        console.error("Speech error:", e);
-        setIsSpeaking(false);
-      };
-      
-      // Try to set a good voice
-      try {
-        const voices = speechSynthesis.getVoices();
-        console.log("Available voices:", voices.map(v => v.name).join(", "));
-        
-        if (voices.length > 0) {
-          const preferredVoice = voices.find(voice => 
-            voice.name.includes('Google') || 
-            voice.name.includes('Female') || 
-            voice.name.includes('English') ||
-            voice.name.includes('US') ||
-            voice.name.includes('Karen') ||
-            voice.name.includes('Samantha')
-          );
-          
-          if (preferredVoice) {
-            console.log("Using voice:", preferredVoice.name);
-            utterance.voice = preferredVoice;
-          } else {
-            console.log("Using default voice:", voices[0].name);
-            utterance.voice = voices[0];
-          }
-        }
-      } catch (err) {
-        console.error("Error setting voice:", err);
-      }
-      
-      // Actually speak!
-      try {
-        console.log("Speaking text:", cleanText.substring(0, 50) + "...");
-        speechSynthesis.speak(utterance);
-      } catch (err) {
-        console.error("Error speaking:", err);
-        toast({
-          title: "Speech Error",
-          description: "There was a problem with text-to-speech",
-          variant: "destructive",
-        });
-        setIsSpeaking(false);
-      }
+      return;
+    }
+    
+    // Stop any current speech
+    stopSpeaking();
+    
+    // Create a toast notification
+    toast({
+      title: "Speaking...",
+      description: "Text-to-speech activated",
+      duration: 3000,
+    });
+    
+    // Create utterance
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.0;
+    utterance.volume = 1.0;
+    
+    // Setup event handlers
+    utterance.onstart = () => {
+      console.log("Speech started");
+      setIsSpeaking(true);
+    };
+    
+    utterance.onend = () => {
+      console.log("Speech ended");
+      setIsSpeaking(false);
+    };
+    
+    utterance.onerror = (e) => {
+      console.error("Speech error occurred:", e);
+      setIsSpeaking(false);
+    };
+    
+    // Just speak with default voice
+    try {
+      window.speechSynthesis.speak(utterance);
+      console.log("Speaking request sent");
+    } catch (error) {
+      console.error("Error speaking:", error);
+      setIsSpeaking(false);
     }
   };
   
-  // Text-to-speech for assistant messages
+  // Automatically speak assistant messages
   useEffect(() => {
-    // Automatically speak the assistant's response in both expanded and collapsed mode
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'assistant' && !isSpeaking) {
@@ -175,7 +151,7 @@ export default function SimpleClaudeAssistant({
       }
     }
     
-    // Stop speaking when expanded and changing modes
+    // Stop speaking when mode changes
     if (isExpanded && isSpeaking) {
       stopSpeaking();
     }
