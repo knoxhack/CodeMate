@@ -16,8 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getChatResponse } from "@/lib/anthropic";
 import { useToast } from "@/hooks/use-toast";
-import { ProjectFile } from "@/types/project";
-
 // Define message and code suggestion types for internal use
 interface Message {
   role: "user" | "assistant";
@@ -35,11 +33,19 @@ interface CodeSuggestion {
   endLine?: number;
 }
 
+// For compatibility with both file types
+interface FileCompatible {
+  name: string;
+  path: string;
+  content: string;
+  [key: string]: any;
+}
+
 interface SimpleClaudeAssistantProps {
   projectId: number;
   projectName: string;
-  files: ProjectFile[];
-  currentFile?: ProjectFile;
+  files: FileCompatible[];
+  currentFile?: FileCompatible;
   onApplySuggestion?: (suggestion: CodeSuggestion) => void;
 }
 
