@@ -9,8 +9,11 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || 'dummy-key', // Use environment variable in production
 });
 
-// Using Claude Sonnet - the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
-const CLAUDE_MODEL = "claude-3-7-sonnet-20250219";
+// Using multiple Claude models for different purposes
+// Claude Sonnet - the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
+const CLAUDE_SONNET_MODEL = "claude-3-7-sonnet-20250219";
+// Claude Code - specialized for code editing and generation
+const CLAUDE_CODE_MODEL = "claude-3-7-opus-20240229";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
@@ -316,11 +319,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chat with Claude
   app.post("/api/chat", async (req, res) => {
     try {
-      const { messages } = req.body;
+      const { messages, isVoiceMode = false } = req.body;
       
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Messages array is required" });
       }
+      
+      // Select the appropriate model based on voice mode
+      const modelToUse = isVoiceMode ? CLAUDE_SONNET_MODEL : CLAUDE_CODE_MODEL;
       
       // System prompt to set context for Claude
       const systemPrompt = `You are CodeMate — an advanced AI coding agent powered by Claude Code inside a live web platform for developing Minecraft mods using NeoForge MDK 1.21.5.
@@ -415,7 +421,7 @@ When generating code, please provide complete, well-formatted implementations.`;
       try {
         // Create Claude message request
         const response = await anthropic.messages.create({
-          model: CLAUDE_MODEL,
+          model: modelToUse,
           system: systemPrompt,
           max_tokens: 1024,
           messages: messages
@@ -506,7 +512,7 @@ The programming language is ${language || 'Java'}.`;
       
       try {
         const response = await anthropic.messages.create({
-          model: CLAUDE_MODEL,
+          model: CLAUDE_CODE_MODEL, // Always use the code model for code generation
           system: systemPrompt,
           max_tokens: 1500,
           messages: [
@@ -640,7 +646,7 @@ The programming language is ${language || 'Java'}.`;
       
       try {
         const response = await anthropic.messages.create({
-          model: CLAUDE_MODEL,
+          model: CLAUDE_CODE_MODEL, // Always use the code model for error fixing
           system: systemPrompt,
           max_tokens: 1500,
           messages: [
