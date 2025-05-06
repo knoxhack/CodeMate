@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ProjectFile, ProjectFolder, ConsoleLogEntry, ChatMessage } from "@/types/project";
-import { getChatResponse } from "@/lib/anthropic";
+// Commented out the API import since we're using the client-side fallback system
+// import { getChatResponse } from "@/lib/anthropic";
 
 // Define the context type
 interface AppContextType {
