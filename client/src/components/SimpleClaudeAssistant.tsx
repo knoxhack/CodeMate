@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getChatResponse } from "@/lib/anthropic";
 import { useToast } from "@/hooks/use-toast";
+
 // Define message and code suggestion types for internal use
 interface Message {
   role: "user" | "assistant";
@@ -76,6 +77,94 @@ export default function SimpleClaudeAssistant({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
   
+  // Function to stop speaking
+  const stopSpeaking = () => {
+    if (speechSynthesis) {
+      speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  };
+  
+  // Function to speak text aloud
+  const speakText = (text: string) => {
+    // Don't speak code blocks
+    const cleanText = text.replace(/```[\s\S]*?```/g, "Code block omitted for speech.");
+    
+    if (speechSynthesis) {
+      // Stop any current speech
+      stopSpeaking();
+      
+      // Create a toast notification
+      toast({
+        title: "Speaking...",
+        description: "Text-to-speech activated",
+        duration: 3000,
+      });
+      
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      
+      // Set up event handlers
+      utterance.onstart = () => {
+        console.log("Speech started");
+        setIsSpeaking(true);
+      };
+      
+      utterance.onend = () => {
+        console.log("Speech ended");
+        setIsSpeaking(false);
+      };
+      
+      utterance.onerror = (e) => {
+        console.error("Speech error:", e);
+        setIsSpeaking(false);
+      };
+      
+      // Try to set a good voice
+      try {
+        const voices = speechSynthesis.getVoices();
+        console.log("Available voices:", voices.map(v => v.name).join(", "));
+        
+        if (voices.length > 0) {
+          const preferredVoice = voices.find(voice => 
+            voice.name.includes('Google') || 
+            voice.name.includes('Female') || 
+            voice.name.includes('English') ||
+            voice.name.includes('US') ||
+            voice.name.includes('Karen') ||
+            voice.name.includes('Samantha')
+          );
+          
+          if (preferredVoice) {
+            console.log("Using voice:", preferredVoice.name);
+            utterance.voice = preferredVoice;
+          } else {
+            console.log("Using default voice:", voices[0].name);
+            utterance.voice = voices[0];
+          }
+        }
+      } catch (err) {
+        console.error("Error setting voice:", err);
+      }
+      
+      // Actually speak!
+      try {
+        console.log("Speaking text:", cleanText.substring(0, 50) + "...");
+        speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.error("Error speaking:", err);
+        toast({
+          title: "Speech Error",
+          description: "There was a problem with text-to-speech",
+          variant: "destructive",
+        });
+        setIsSpeaking(false);
+      }
+    }
+  };
+  
   // Text-to-speech for assistant messages
   useEffect(() => {
     // Automatically speak the assistant's response in both expanded and collapsed mode
@@ -90,47 +179,7 @@ export default function SimpleClaudeAssistant({
     if (isExpanded && isSpeaking) {
       stopSpeaking();
     }
-  }, [messages]);
-  
-  // Function to speak text aloud
-  const speakText = (text: string) => {
-    // Don't speak code blocks
-    const cleanText = text.replace(/```[\s\S]*?```/g, "Code block omitted for speech.");
-    
-    if (speechSynthesis) {
-      // Stop any current speech
-      stopSpeaking();
-      
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-      
-      // Get available voices and choose a good one
-      const voices = speechSynthesis.getVoices();
-      const preferredVoice = voices.find(voice => 
-        voice.name.includes('Google') || voice.name.includes('Female') || voice.name.includes('English')
-      );
-      
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
-      
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      
-      speechSynthesis.speak(utterance);
-    }
-  };
-  
-  // Function to stop speaking
-  const stopSpeaking = () => {
-    if (speechSynthesis) {
-      speechSynthesis.cancel();
-      setIsSpeaking(false);
-    }
-  };
+  }, [messages, isExpanded, isSpeaking]);
   
   // Function to start speech recognition
   const startListening = () => {
@@ -404,45 +453,43 @@ export default function SimpleClaudeAssistant({
       
       {isExpanded ? (
         <>
-          {/* Chat content */}
-          <ScrollArea className="flex-grow h-[240px]">
+          <ScrollArea className="flex-grow overflow-y-auto">
             <div className="p-4">
               {messages.length === 0 ? (
-                <div className="flex items-start gap-3">
-                  <MessageSquare className="h-8 w-8 text-blue-400 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm text-gray-300">
-                      I'm Claude, your AI assistant for NeoForge 1.21.5 modding. I can help you with:
-                    </p>
-                    <ul className="mt-2 space-y-1 text-sm text-gray-400 list-disc pl-5">
-                      <li>Writing and debugging mod code</li>
-                      <li>Explaining NeoForge concepts</li>
-                      <li>Generating boilerplate code</li>
-                      <li>Providing suggestions for features</li>
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="rounded-full bg-blue-600/20 p-3 mb-3">
+                    <MessageSquare className="h-6 w-6 text-blue-400" />
+                  </div>
+                  <h3 className="text-sm font-medium text-gray-200 mb-1">Claude Code Assistant</h3>
+                  <p className="text-xs text-gray-400 max-w-[260px] mb-4">
+                    Trained on NeoForge 1.21.5 modding API and best practices.
+                  </p>
+                  <div className="text-xs text-left text-gray-300 bg-gray-800/50 p-3 rounded-md mb-2 max-w-[300px]">
+                    <p className="font-medium mb-2">Try asking:</p>
+                    <ul className="space-y-2">
+                      <li>• How do I register a custom item?</li>
+                      <li>• Explain how entity pathfinding works</li>
+                      <li>• Example of custom ore generation</li>
                     </ul>
-                    <p className="mt-2 text-sm text-gray-300">
-                      How can I help you with your Minecraft mod today?
-                    </p>
                   </div>
                 </div>
               ) : (
                 <>
-                  {/* Audio controls for expanded view */}
-                  {messages.length > 0 && (
-                    <div className="flex items-center justify-end gap-2 mb-3">
+                  {/* Voice controls for expanded view */}
+                  {!isListening && (
+                    <div className="flex items-center justify-end gap-2 mb-4">
+                      {/* Play/Stop Button */}
                       <Button
                         variant={isSpeaking ? "secondary" : "outline"}
                         size="sm"
                         className={`h-7 w-7 p-0 ${isSpeaking ? "bg-blue-600/50 border-blue-500" : "border-gray-600"}`}
                         onClick={isSpeaking ? stopSpeaking : () => {
-                          if (messages.length > 0) {
-                            const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
-                            if (lastAssistantMsg) {
-                              speakText(lastAssistantMsg.content);
-                            }
+                          const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+                          if (lastAssistantMsg) {
+                            speakText(lastAssistantMsg.content);
                           }
                         }}
-                        title={isSpeaking ? "Stop speaking" : "Read last response"}
+                        title={isSpeaking ? "Stop speaking" : "Play last response"}
                       >
                         {isSpeaking ? <VolumeX className="h-3.5 w-3.5 text-white" /> : <Volume2 className="h-3.5 w-3.5 text-blue-400" />}
                       </Button>
