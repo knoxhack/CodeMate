@@ -1,14 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { useAppContext } from "@/context/AppContext";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, SendHorizonal, RotateCcw, Wrench, ArrowRightCircle } from "lucide-react";
 import { ChatMessage } from "@/types/project";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 
 export default function ClaudeAssistant() {
   const [message, setMessage] = useState("");
   const [autoExplain, setAutoExplain] = useState(false);
   const [askBeforeEdit, setAskBeforeEdit] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   
   const { 
     chatMessages, 
@@ -61,57 +64,62 @@ export default function ClaudeAssistant() {
           <button 
             type="submit" 
             className={cn(
-              "bg-primary px-3 py-2 rounded-r text-sm text-white",
+              "bg-primary px-3 py-2 rounded-r text-sm text-white flex items-center",
               isClaudeThinking ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"
             )}
             disabled={isClaudeThinking || !message.trim()}
           >
-            Send
+            {isMobile ? <SendHorizonal className="h-4 w-4" /> : "Send"}
           </button>
         </form>
         
-        <div className="flex items-center space-x-4 text-sm">
-          <label className="flex items-center space-x-2 text-text-secondary">
-            <input 
-              type="checkbox" 
-              className="rounded text-primary focus:ring-primary"
-              checked={autoExplain}
-              onChange={() => setAutoExplain(!autoExplain)}
-            />
-            <span>Auto-Explain</span>
-          </label>
-          <label className="flex items-center space-x-2 text-text-secondary">
-            <input 
-              type="checkbox" 
-              className="rounded text-primary focus:ring-primary"
-              checked={askBeforeEdit}
-              onChange={() => setAskBeforeEdit(!askBeforeEdit)}
-            />
-            <span>Ask Before Edit</span>
-          </label>
-        </div>
+        {!isMobile && (
+          <div className="flex items-center space-x-4 text-sm">
+            <label className="flex items-center space-x-2 text-text-secondary">
+              <input 
+                type="checkbox" 
+                className="rounded text-primary focus:ring-primary"
+                checked={autoExplain}
+                onChange={() => setAutoExplain(!autoExplain)}
+              />
+              <span>Auto-Explain</span>
+            </label>
+            <label className="flex items-center space-x-2 text-text-secondary">
+              <input 
+                type="checkbox" 
+                className="rounded text-primary focus:ring-primary"
+                checked={askBeforeEdit}
+                onChange={() => setAskBeforeEdit(!askBeforeEdit)}
+              />
+              <span>Ask Before Edit</span>
+            </label>
+          </div>
+        )}
         
-        <div className="flex space-x-2">
-          <button 
-            className="bg-primary hover:bg-primary/90 text-white px-3 py-1.5 rounded text-sm flex-1"
+        <div className={`flex ${isMobile ? 'space-x-1' : 'space-x-2'}`}>
+          <Button
+            variant="default"
+            className={`bg-primary text-white flex items-center justify-center ${isMobile ? 'p-2' : 'px-3 py-1.5'} rounded text-sm flex-1`}
             onClick={continueDevelopment}
             disabled={isClaudeThinking}
           >
-            Continue Dev
-          </button>
-          <button 
-            className="bg-primary hover:bg-primary/90 text-white px-3 py-1.5 rounded text-sm flex-1"
+            {isMobile ? <ArrowRightCircle className="h-4 w-4" /> : "Continue Dev"}
+          </Button>
+          <Button
+            variant="default"
+            className={`bg-primary text-white flex items-center justify-center ${isMobile ? 'p-2' : 'px-3 py-1.5'} rounded text-sm flex-1`}
             onClick={fixError}
             disabled={isClaudeThinking}
           >
-            Fix Error
-          </button>
-          <button 
-            className="bg-background-dark hover:bg-gray-700 text-white px-3 py-1.5 rounded text-sm"
+            {isMobile ? <Wrench className="h-4 w-4" /> : "Fix Error"}
+          </Button>
+          <Button
+            variant="secondary"
+            className={`bg-background-dark text-white flex items-center justify-center ${isMobile ? 'p-2' : 'px-3 py-1.5'} rounded text-sm`}
             onClick={resetChat}
           >
-            Reset
-          </button>
+            {isMobile ? <RotateCcw className="h-4 w-4" /> : "Reset"}
+          </Button>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { Folder, File, ChevronRight, ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { useAppContext } from "@/context/AppContext";
+import { useAppContext } from "@/hooks/useAppContext";
 import { ProjectFile, ProjectFolder } from "@/types/project";
 import { cn } from "@/lib/utils";
 

@@ -57,6 +57,90 @@ const defaultContextValue: AppContextType = {
 // Create the context with a default value
 const AppContext = createContext<AppContextType>(defaultContextValue);
 
+// Initial mock data
+const initialProjectStructure: (ProjectFile | ProjectFolder)[] = [
+  {
+    name: 'src',
+    path: '/src',
+    type: 'folder',
+    children: [
+      {
+        name: 'main',
+        path: '/src/main',
+        type: 'folder',
+        children: [
+          {
+            name: 'java',
+            path: '/src/main/java',
+            type: 'folder',
+            children: [
+              {
+                name: 'CorruptOreBlock.java',
+                path: '/src/main/java/CorruptOreBlock.java',
+                type: 'file',
+                content: '// CorruptOreBlock implementation\n\npackage com.example.mod.block;\n\nimport net.minecraft.world.level.block.Block;\n\npublic class CorruptOreBlock extends Block {\n    // Implementation goes here\n}'
+              },
+              {
+                name: 'MySword.java',
+                path: '/src/main/java/MySword.java',
+                type: 'file',
+                content: 'package commond.item;\n\nimport modern.mymod.item;\n\nimport on.modern.DataComponent<>;\n\npublic class ITEM DeferredRegister<ITEM>\n\npublic MySword class MySword {\n\n    public MySword(private CommonSpace<ITEM> s)\n    {\n        ...\n    }\n}'
+              }
+            ]
+          },
+          {
+            name: 'resources',
+            path: '/src/main/resources',
+            type: 'folder',
+            children: [
+              {
+                name: 'lang',
+                path: '/src/main/resources/lang',
+                type: 'folder',
+                children: []
+              },
+              {
+                name: 'modelstates',
+                path: '/src/main/resources/modelstates',
+                type: 'folder',
+                children: []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];
+
+const initialConsoleOutput: ConsoleLogEntry[] = [
+  {
+    type: 'success',
+    message: 'BUILD SUCCESS SUCCESSFUL',
+    timestamp: new Date(),
+    clickable: false
+  },
+  {
+    type: 'success',
+    message: 'GRADLE BUILLD SUCCESSFUL at:corp/CorruptOreBlock.java:42',
+    timestamp: new Date(),
+    clickable: false
+  },
+  {
+    type: 'success',
+    message: 'NUTLD SUCCESSFUL: GRODE S\\%C%SPQL',
+    timestamp: new Date(),
+    clickable: false
+  },
+  {
+    type: 'error',
+    message: 'NullPointerException at line 42 CompeXCorruptOreBlock.java',
+    timestamp: new Date(),
+    clickable: true,
+    onClick: () => console.log('Navigate to error location')
+  }
+];
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [projectName, setProjectName] = useState("Example Mod");
   const [projectStructure, setProjectStructure] = useState<(ProjectFile | ProjectFolder)[]>(initialProjectStructure);
@@ -268,92 +352,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 export function useAppContext() {
   const context = useContext(AppContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;
 }
-
-// Initial mock data
-const initialProjectStructure: (ProjectFile | ProjectFolder)[] = [
-  {
-    name: 'src',
-    path: '/src',
-    type: 'folder',
-    children: [
-      {
-        name: 'main',
-        path: '/src/main',
-        type: 'folder',
-        children: [
-          {
-            name: 'java',
-            path: '/src/main/java',
-            type: 'folder',
-            children: [
-              {
-                name: 'CorruptOreBlock.java',
-                path: '/src/main/java/CorruptOreBlock.java',
-                type: 'file',
-                content: '// CorruptOreBlock implementation\n\npackage com.example.mod.block;\n\nimport net.minecraft.world.level.block.Block;\n\npublic class CorruptOreBlock extends Block {\n    // Implementation goes here\n}'
-              },
-              {
-                name: 'MySword.java',
-                path: '/src/main/java/MySword.java',
-                type: 'file',
-                content: 'package commond.item;\n\nimport modern.mymod.item;\n\nimport on.modern.DataComponent<>;\n\npublic class ITEM DeferredRegister<ITEM>\n\npublic MySword class MySword {\n\n    public MySword(private CommonSpace<ITEM> s)\n    {\n        ...\n    }\n}'
-              }
-            ]
-          },
-          {
-            name: 'resources',
-            path: '/src/main/resources',
-            type: 'folder',
-            children: [
-              {
-                name: 'lang',
-                path: '/src/main/resources/lang',
-                type: 'folder',
-                children: []
-              },
-              {
-                name: 'modelstates',
-                path: '/src/main/resources/modelstates',
-                type: 'folder',
-                children: []
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-];
-
-const initialConsoleOutput: ConsoleLogEntry[] = [
-  {
-    type: 'success',
-    message: 'BUILD SUCCESS SUCCESSFUL',
-    timestamp: new Date(),
-    clickable: false
-  },
-  {
-    type: 'success',
-    message: 'GRADLE BUILLD SUCCESSFUL at:corp/CorruptOreBlock.java:42',
-    timestamp: new Date(),
-    clickable: false
-  },
-  {
-    type: 'success',
-    message: 'NUTLD SUCCESSFUL: GRODE S\\%C%SPQL',
-    timestamp: new Date(),
-    clickable: false
-  },
-  {
-    type: 'error',
-    message: 'NullPointerException at line 42 CompeXCorruptOreBlock.java',
-    timestamp: new Date(),
-    clickable: true,
-    onClick: () => console.log('Navigate to error location')
-  }
-];
