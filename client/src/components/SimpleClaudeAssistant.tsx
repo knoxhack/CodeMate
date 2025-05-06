@@ -16,20 +16,21 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getChatResponse } from "@/lib/anthropic";
 import { useToast } from "@/hooks/use-toast";
+import { ProjectFile } from "@/types/project";
 
-// Define message types
+// Define message and code suggestion types for internal use
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-// Define code suggestion type
 interface CodeSuggestion {
   code: string;
   language: string;
   description?: string;
-  fileId?: number;
-  filePath?: string;
+  fileId?: string;
+  originalCode?: string;
+  suggestedCode?: string;
   startLine?: number;
   endLine?: number;
 }
@@ -37,9 +38,9 @@ interface CodeSuggestion {
 interface SimpleClaudeAssistantProps {
   projectId: number;
   projectName: string;
-  files: any[];
-  currentFile?: any;
-  onApplySuggestion?: (suggestion: any) => void;
+  files: ProjectFile[];
+  currentFile?: ProjectFile;
+  onApplySuggestion?: (suggestion: CodeSuggestion) => void;
 }
 
 export default function SimpleClaudeAssistant({
@@ -78,7 +79,10 @@ export default function SimpleClaudeAssistant({
       suggestions.push({
         code,
         language,
-        description: `Generated ${language} code`
+        description: `Generated ${language} code`,
+        suggestedCode: code,
+        originalCode: currentFile?.content || "",
+        fileId: currentFile?.path
       });
     }
     
@@ -106,7 +110,7 @@ export default function SimpleClaudeAssistant({
     setIsProcessing(true);
     
     try {
-      // Call Claude API via our backend
+      // Call Claude API via our backend using the helper function
       const assistantMessage = await getChatResponse([...messages, userMessage]);
       
       // Update messages state with response
@@ -177,7 +181,7 @@ export default function SimpleClaudeAssistant({
     
     // Process message content to handle code blocks for display
     const processedContent = msg.content.replace(/```([a-zA-Z0-9_]+)?\n([\s\S]*?)```/g, 
-      (match, language, code) => `<div class="code-block-placeholder"></div>`);
+      (_match: string, _language: string, _code: string) => `<div class="code-block-placeholder"></div>`);
     
     return (
       <div 
@@ -197,7 +201,7 @@ export default function SimpleClaudeAssistant({
             dangerouslySetInnerHTML={{ 
               __html: processedContent
                 .split('<div class="code-block-placeholder"></div>')
-                .map(part => part.replace(/\n/g, '<br/>'))
+                .map((part: string) => part.replace(/\n/g, '<br/>'))
                 .join('<div class="code-block-placeholder"></div>')
             }} 
           />
@@ -215,7 +219,7 @@ export default function SimpleClaudeAssistant({
                 <div className="flex items-center space-x-1">
                   <Button 
                     variant="ghost" 
-                    size="xs" 
+                    size="sm" 
                     className="h-6 w-6 p-0"
                     onClick={() => handleApplySuggestion(suggestion)}
                   >
@@ -223,7 +227,7 @@ export default function SimpleClaudeAssistant({
                   </Button>
                   <Button 
                     variant="ghost" 
-                    size="xs" 
+                    size="sm" 
                     className="h-6 w-6 p-0"
                     onClick={() => navigator.clipboard.writeText(suggestion.code)}
                   >
