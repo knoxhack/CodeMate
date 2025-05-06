@@ -14,7 +14,6 @@ export default function ClaudeAssistant() {
   const [message, setMessage] = useState("");
   const [autoExplain, setAutoExplain] = useState(false);
   const [askBeforeEdit, setAskBeforeEdit] = useState(false);
-  const [expandedInput, setExpandedInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -34,7 +33,6 @@ export default function ClaudeAssistant() {
     if (message.trim() && !isClaudeThinking) {
       addUserMessage(message);
       setMessage("");
-      setExpandedInput(false);
     }
   };
   
@@ -147,56 +145,25 @@ export default function ClaudeAssistant() {
       
       {/* Input and Controls */}
       <div className="border-t border-gray-800 p-3 space-y-3">
-        {expandedInput ? (
-          <form onSubmit={handleSubmit} className="flex flex-col space-y-2">
-            <Textarea
-              className="bg-background-dark border border-gray-700 rounded text-sm text-white min-h-20 focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Ask Claude for help with your Minecraft mod..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <div className="flex justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setExpandedInput(false)}
-              >
-                Collapse
-              </Button>
-              <Button
-                type="submit"
-                variant="default"
-                size="sm"
-                className="bg-primary text-white"
-                disabled={isClaudeThinking || !message.trim()}
-              >
-                {isClaudeThinking ? "Thinking..." : "Send Message"}
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex">
-            <input
-              type="text"
-              className="flex-1 bg-background-dark border border-gray-700 rounded-l px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Ask Claude for help..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onFocus={() => isMobile && message.length > 50 && setExpandedInput(true)}
-            />
-            <button 
-              type="submit" 
-              className={cn(
-                "bg-primary px-3 py-2 rounded-r text-sm text-white flex items-center",
-                isClaudeThinking ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"
-              )}
-              disabled={isClaudeThinking || !message.trim()}
-            >
-              {isMobile ? <SendHorizonal className="h-4 w-4" /> : "Send"}
-            </button>
-          </form>
-        )}
+        <form onSubmit={handleSubmit} className="flex">
+          <input
+            type="text"
+            className="flex-1 bg-background-dark border border-gray-700 rounded-l px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Ask Claude for help..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <button 
+            type="submit" 
+            className={cn(
+              "bg-primary px-3 py-2 rounded-r text-sm text-white flex items-center",
+              isClaudeThinking ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90"
+            )}
+            disabled={isClaudeThinking || !message.trim()}
+          >
+            {isMobile ? <SendHorizonal className="h-4 w-4" /> : "Send"}
+          </button>
+        </form>
         
         <div className={`flex ${isMobile ? 'space-x-1' : 'space-x-2'}`}>
           <Button
