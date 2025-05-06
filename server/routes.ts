@@ -15,6 +15,304 @@ const CLAUDE_MODEL = "claude-3-7-sonnet-20250219";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   setupAuth(app);
+
+  // Project endpoints
+  app.get("/api/projects", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const userId = req.user!.id;
+      const projects = await storage.getProjectsByUserId(userId);
+      res.json(projects);
+    } catch (error: any) {
+      console.error("Error getting projects:", error);
+      res.status(500).json({ error: "Failed to fetch projects: " + error.message });
+    }
+  });
+
+  app.post("/api/projects", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const userId = req.user!.id;
+      const projectData = { ...req.body, userId };
+      const project = await storage.createProject(projectData);
+      res.status(201).json(project);
+    } catch (error: any) {
+      console.error("Error creating project:", error);
+      res.status(500).json({ error: "Failed to create project: " + error.message });
+    }
+  });
+
+  app.get("/api/projects/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Verify ownership
+      if (project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to project" });
+      }
+      
+      res.json(project);
+    } catch (error: any) {
+      console.error("Error getting project:", error);
+      res.status(500).json({ error: "Failed to fetch project: " + error.message });
+    }
+  });
+
+  app.put("/api/projects/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Verify ownership
+      if (project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to project" });
+      }
+      
+      const updatedProject = await storage.updateProject(projectId, req.body);
+      res.json(updatedProject);
+    } catch (error: any) {
+      console.error("Error updating project:", error);
+      res.status(500).json({ error: "Failed to update project: " + error.message });
+    }
+  });
+
+  app.delete("/api/projects/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Verify ownership
+      if (project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to project" });
+      }
+      
+      await storage.deleteProject(projectId);
+      res.sendStatus(204);
+    } catch (error: any) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ error: "Failed to delete project: " + error.message });
+    }
+  });
+
+  // File endpoints
+  app.get("/api/projects/:projectId/files", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Verify ownership
+      if (project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to project" });
+      }
+      
+      const files = await storage.getFilesByProjectId(projectId);
+      res.json(files);
+    } catch (error: any) {
+      console.error("Error getting files:", error);
+      res.status(500).json({ error: "Failed to fetch files: " + error.message });
+    }
+  });
+
+  app.post("/api/projects/:projectId/files", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Verify ownership
+      if (project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to project" });
+      }
+      
+      const fileData = { ...req.body, projectId };
+      const file = await storage.createFile(fileData);
+      res.status(201).json(file);
+    } catch (error: any) {
+      console.error("Error creating file:", error);
+      res.status(500).json({ error: "Failed to create file: " + error.message });
+    }
+  });
+
+  app.get("/api/files/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const fileId = parseInt(req.params.id);
+      const file = await storage.getFile(fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify ownership through project
+      const project = await storage.getProject(file.projectId);
+      if (!project || project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to file" });
+      }
+      
+      res.json(file);
+    } catch (error: any) {
+      console.error("Error getting file:", error);
+      res.status(500).json({ error: "Failed to fetch file: " + error.message });
+    }
+  });
+
+  app.put("/api/files/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const fileId = parseInt(req.params.id);
+      const file = await storage.getFile(fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify ownership through project
+      const project = await storage.getProject(file.projectId);
+      if (!project || project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to file" });
+      }
+      
+      // Only allow updating content
+      const updatedFile = await storage.updateFile(fileId, req.body.content);
+      res.json(updatedFile);
+    } catch (error: any) {
+      console.error("Error updating file:", error);
+      res.status(500).json({ error: "Failed to update file: " + error.message });
+    }
+  });
+
+  app.delete("/api/files/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const fileId = parseInt(req.params.id);
+      const file = await storage.getFile(fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Verify ownership through project
+      const project = await storage.getProject(file.projectId);
+      if (!project || project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to file" });
+      }
+      
+      await storage.deleteFile(fileId);
+      res.sendStatus(204);
+    } catch (error: any) {
+      console.error("Error deleting file:", error);
+      res.status(500).json({ error: "Failed to delete file: " + error.message });
+    }
+  });
+  
+  // Chat messages endpoints
+  app.get("/api/projects/:projectId/chat", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Verify ownership
+      if (project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to project" });
+      }
+      
+      const messages = await storage.getChatMessagesByProjectId(projectId);
+      res.json(messages);
+    } catch (error: any) {
+      console.error("Error getting chat messages:", error);
+      res.status(500).json({ error: "Failed to fetch chat messages: " + error.message });
+    }
+  });
+
+  app.post("/api/projects/:projectId/chat", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Verify ownership
+      if (project.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized access to project" });
+      }
+      
+      const messageData = { ...req.body, projectId };
+      const message = await storage.createChatMessage(messageData);
+      res.status(201).json(message);
+    } catch (error: any) {
+      console.error("Error creating chat message:", error);
+      res.status(500).json({ error: "Failed to create chat message: " + error.message });
+    }
+  });
   // Chat with Claude
   app.post("/api/chat", async (req, res) => {
     try {
