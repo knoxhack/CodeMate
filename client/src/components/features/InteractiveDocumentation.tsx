@@ -730,17 +730,19 @@ The component system in NeoForge 1.21.5 replaces inheritance-based approaches wi
 ## Basic Component Usage
 
 1. **Attaching Components**: Use the \`setData\` method on items during registration
-   ```java
-   item.setData(ItemComponentsKeys.DURABILITY, new Item.DurabilityComponent(250));
-   ```
+
+\`\`\`java
+item.setData(ItemComponentsKeys.DURABILITY, new Item.DurabilityComponent(250));
+\`\`\`
 
 2. **Retrieving Components**: Use the \`getData\` method on ItemStack
-   ```java
-   DurabilityComponent durability = stack.getData(ItemComponentsKeys.DURABILITY);
-   if (durability != null) {
-       int maxDurability = durability.getMaxDurability();
-   }
-   ```
+
+\`\`\`java
+DurabilityComponent durability = stack.getData(ItemComponentsKeys.DURABILITY);
+if (durability != null) {
+    int maxDurability = durability.getMaxDurability();
+}
+\`\`\`
 
 3. **Common Component Keys**:
    - \`ItemComponentsKeys.DURABILITY\`: For item durability
@@ -750,7 +752,7 @@ The component system in NeoForge 1.21.5 replaces inheritance-based approaches wi
 
 ## Registration Example
 
-```java
+\`\`\`java
 public static void register(ComponentRegistry registry) {
     registry.register(registration -> {
         registration.register(ITEMS, 
@@ -760,7 +762,7 @@ public static void register(ComponentRegistry registry) {
                 .setData(ItemComponentsKeys.MELEE_WEAPON, new Item.MeleeWeaponComponent(3.0f, 2.0f, -2.4f)));
     });
 }
-```
+\`\`\`
 
 Would you like me to explain any specific component in more detail?`;
       } else if (chatQuestion.toLowerCase().includes("registry") || chatQuestion.toLowerCase().includes("register")) {
@@ -780,15 +782,16 @@ NeoForge 1.21.5 introduces a major change to how game objects are registered. Th
    - Registry entries use DeferredHolder instead of RegistryObject
 
 3. **Registration Process**
-   ```java
-   public static void register(ComponentRegistry registry) {
-       registry.register(registration -> {
-           registration.register(BLOCKS, 
-               new ResourceLocation(MOD_ID, "custom_block"),
-               () -> new Block(BlockBehaviour.Properties.of()));
-       });
-   }
-   ```
+
+\`\`\`java
+public static void register(ComponentRegistry registry) {
+    registry.register(registration -> {
+        registration.register(BLOCKS, 
+            new ResourceLocation(MOD_ID, "custom_block"),
+            () -> new Block(BlockBehaviour.Properties.of()));
+    });
+}
+\`\`\`
 
 4. **Migration Steps**
    - Replace DeferredRegister with direct ComponentRegistry usage
@@ -808,21 +811,23 @@ ${chatQuestion.toLowerCase().includes("block") ? `
 Blocks in NeoForge 1.21.5 follow the same basic structure as vanilla Minecraft, but with some important differences:
 
 1. **Registration**: Use ComponentRegistry instead of DeferredRegister
-   ```java
-   registry.register(registration -> {
-       registration.register(BLOCKS, 
-           new ResourceLocation(MOD_ID, "custom_block"),
-           () -> new Block(BlockBehaviour.Properties.of()));
-   });
-   ```
+
+\`\`\`java
+registry.register(registration -> {
+    registration.register(BLOCKS, 
+        new ResourceLocation(MOD_ID, "custom_block"),
+        () -> new Block(BlockBehaviour.Properties.of()));
+});
+\`\`\`
 
 2. **Block Properties**: Define using BlockBehaviour.Properties
-   ```java
-   BlockBehaviour.Properties.of()
-       .mapColor(MapColor.STONE)
-       .strength(3.0F)
-       .requiresCorrectToolForDrops()
-   ```
+
+\`\`\`java
+BlockBehaviour.Properties.of()
+    .mapColor(MapColor.STONE)
+    .strength(3.0F)
+    .requiresCorrectToolForDrops()
+\`\`\`
 
 3. **Block Entities**: Can now use components similar to items
 

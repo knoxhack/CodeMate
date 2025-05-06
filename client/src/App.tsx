@@ -10,11 +10,13 @@ import { ProtectedRoute } from "./lib/protected-route";
 import Home from "./pages/home";
 import AuthPage from "./pages/auth-page";
 import NotFound from "./pages/not-found";
+import ProjectEditor from "./pages/project-editor";
 
 function Router() {
   return (
     <Switch>
       <ProtectedRoute path="/" component={Home} />
+      <ProtectedRoute path="/projects/:id" component={ProjectEditor} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
