@@ -3,49 +3,58 @@
 @tailwind utilities;
 
 :root {
-      --background: 0 0% 100%;
---foreground: 20 14.3% 4.1%;
---muted: 60 4.8% 95.9%;
---muted-foreground: 25 5.3% 44.7%;
---popover: 0 0% 100%;
---popover-foreground: 20 14.3% 4.1%;
---card: 0 0% 100%;
---card-foreground: 20 14.3% 4.1%;
---border: 20 5.9% 90%;
---input: 20 5.9% 90%;
---primary: 207 90% 54%;
---primary-foreground: 211 100% 99%;
---secondary: 60 4.8% 95.9%;
---secondary-foreground: 24 9.8% 10%;
---accent: 60 4.8% 95.9%;
---accent-foreground: 24 9.8% 10%;
---destructive: 0 84.2% 60.2%;
---destructive-foreground: 60 9.1% 97.8%;
---ring: 20 14.3% 4.1%;
---radius: 0.5rem;
-  }
-  .dark {
-      --background: 240 10% 3.9%;
---foreground: 0 0% 98%;
---muted: 240 3.7% 15.9%;
---muted-foreground: 240 5% 64.9%;
---popover: 240 10% 3.9%;
---popover-foreground: 0 0% 98%;
---card: 240 10% 3.9%;
---card-foreground: 0 0% 98%;
---border: 240 3.7% 15.9%;
---input: 240 3.7% 15.9%;
---primary: 207 90% 54%;
---primary-foreground: 211 100% 99%;
---secondary: 240 3.7% 15.9%;
---secondary-foreground: 0 0% 98%;
---accent: 240 3.7% 15.9%;
---accent-foreground: 0 0% 98%;
---destructive: 0 62.8% 30.6%;
---destructive-foreground: 0 0% 98%;
---ring: 240 4.9% 83.9%;
---radius: 0.5rem;
-  }
+  /* Default UI colors */
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 60 4.8% 95.9%;
+  --secondary-foreground: 24 9.8% 10%;
+  --accent: 60 4.8% 95.9%;
+  --accent-foreground: 24 9.8% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 20 14.3% 4.1%;
+  --radius: 0.5rem;
+
+  /* Biome theme variables with initial values */
+  --theme-primary: #7fb238;
+  --theme-secondary: #55813b;
+  --theme-accent: #f9d354;
+  --theme-background: #8ab971;
+  --theme-text: #ffffff;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+}
 
 @layer base {
   * {
@@ -166,4 +175,83 @@
 .language-java .token.comment {
   color: #6b7280;
   font-style: italic;
+}
+
+/* Minecraft biome theme styling */
+/* Cards, modals, and UI elements can use these classes */
+.biome-themed-card {
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 2px solid var(--theme-primary);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  color: var(--theme-text);
+}
+
+.biome-themed-button {
+  background-color: var(--theme-primary);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-secondary);
+  transition: all 0.2s ease;
+}
+
+.biome-themed-button:hover {
+  background-color: var(--theme-secondary);
+  box-shadow: 0 0 10px var(--theme-accent);
+}
+
+/* Theme-specific texture overlays */
+.theme-plains .texture-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0z' fill='%2377b32f' fill-opacity='.1'/%3E%3Cpath d='M0 10h20v1H0z' fill='%2377b32f' fill-opacity='.2'/%3E%3Cpath d='M10 0v20h1V0z' fill='%2377b32f' fill-opacity='.2'/%3E%3C/svg%3E");
+}
+
+.theme-forest .texture-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30L45 15M30 30L15 45M30 30L15 15M30 30L45 45' stroke='%23214a15' stroke-width='1' fill='none' fill-opacity='.1'/%3E%3C/svg%3E");
+}
+
+.theme-desert .texture-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0z' fill='%23e5c38d' fill-opacity='.1'/%3E%3Cpath d='M5 5h2v2H5z' fill='%23c1a374' fill-opacity='.3'/%3E%3Cpath d='M12 12h3v3h-3z' fill='%23c1a374' fill-opacity='.3'/%3E%3C/svg%3E");
+}
+
+.theme-mountains .texture-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20h25l25-20 25 20h25' stroke='%23555555' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+}
+
+.theme-nether .texture-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20h40M20 0v40' stroke='%23611b12' stroke-width='1' opacity='.3'/%3E%3C/svg%3E");
+}
+
+.theme-end .texture-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0v40M0 20h40' stroke='%232d1c4a' stroke-width='1' opacity='.4'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%235d4a8a' fill-opacity='.5'/%3E%3C/svg%3E");
+}
+
+.theme-ocean .texture-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10s5-10 15-10 15 10 15 10 5-10 15-10 15 10 15 10' stroke='%230d3b65' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+}
+
+.theme-jungle .texture-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0v60M0 30h60' stroke='%231a6625' stroke-width='1' opacity='.3'/%3E%3Cpath d='M15 15h30v30H15z' stroke='%231a6625' stroke-width='1' fill='none' opacity='.2'/%3E%3C/svg%3E");
+}
+
+/* Animated elements */
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+.biome-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Responsive padding adjustments for themed containers */
+.biome-container {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  border: 1px solid var(--theme-primary);
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .biome-container {
+    padding: 1.5rem;
+  }
 }
