@@ -1,248 +1,259 @@
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as monaco from "monaco-editor";
-import { useAppContext } from "@/hooks/useAppContext";
-import { configureMonaco } from "@/lib/monaco-config";
-import { useTheme } from "@/hooks/use-theme";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { X, ZoomIn, ZoomOut, RotateCcw, PlayIcon, Save } from "lucide-react";
+import { editor } from "monaco-editor";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CodeSuggestion } from "@/types/project";
+import { configureMonaco } from "@/lib/monaco-config";
+import { useToast } from "@/hooks/use-toast";
+import { Check, Maximize2, Minimize2 } from "lucide-react";
 
-export default function CodeEditor() {
-  const editorRef = useRef<HTMLDivElement>(null);
-  const editorInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-  const { selectedFile, updateFileContent, runMod, saveMod } = useAppContext();
-  const { theme } = useTheme();
-  const isMobile = useIsMobile();
-  const [fontSize, setFontSize] = useState(isMobile ? 16 : 14);
-  
-  const increaseFontSize = () => {
-    setFontSize(prev => {
-      const newSize = prev + 1;
-      editorInstanceRef.current?.updateOptions({ fontSize: newSize });
-      return newSize;
-    });
-  };
-  
-  const decreaseFontSize = () => {
-    setFontSize(prev => {
-      const newSize = Math.max(12, prev - 1);
-      editorInstanceRef.current?.updateOptions({ fontSize: newSize });
-      return newSize;
-    });
-  };
-  
-  const resetFontSize = () => {
-    const defaultSize = isMobile ? 16 : 14;
-    setFontSize(defaultSize);
-    editorInstanceRef.current?.updateOptions({ fontSize: defaultSize });
-  };
-  
-  // Handle applying a code suggestion from Claude
-  const applyCodeSuggestion = (suggestion: CodeSuggestion) => {
-    if (!editorInstanceRef.current || !selectedFile) return;
-    
-    // Only apply if the current file path matches the suggestion file path
-    const currentPath = selectedFile.path;
-    const suggestionPath = suggestion.fileId;
-    
-    console.log("Checking file paths:", {currentPath, suggestionPath});
-    
-    // If the file paths match, apply the suggestion
-    if (currentPath.endsWith(suggestionPath) || suggestionPath.endsWith(currentPath)) {
-      console.log("Applying code suggestion to file");
-      
-      const currentContent = editorInstanceRef.current.getValue();
-      let newContent = currentContent;
-      
-      // If original code is found, replace it
-      if (currentContent.includes(suggestion.originalCode)) {
-        newContent = currentContent.replace(
-          suggestion.originalCode, 
-          suggestion.suggestedCode
-        );
-        
-        // Update the editor content
-        editorInstanceRef.current.setValue(newContent);
-        
-        // Update the file content in the app context
-        updateFileContent(selectedFile.path, newContent);
-        
-        console.log("Code suggestion applied successfully");
-      } else {
-        console.warn("Could not find original code in the file");
-        // If the original code isn't found, show a warning
-        alert("Could not locate the code segment to replace. The file may have been modified.");
-      }
-    } else {
-      console.log("File paths don't match");
-      // If the file paths don't match, show a message
-      alert(`This suggestion is for file: ${suggestion.fileId}. Please open that file to apply this suggestion.`);
-    }
-  };
-  
-  // Listen for code suggestion events from Claude
-  useEffect(() => {
-    const handleCodeSuggestion = (e: Event) => {
-      const event = e as CustomEvent<CodeSuggestion>;
-      console.log("Received code suggestion event:", event.detail);
-      applyCodeSuggestion(event.detail);
-    };
-    
-    window.addEventListener('claude-code-suggestion', handleCodeSuggestion);
-    
-    return () => {
-      window.removeEventListener('claude-code-suggestion', handleCodeSuggestion);
-    };
-  }, [selectedFile]);
+// Initialize Monaco configuration
+configureMonaco();
 
+interface CodeEditorProps {
+  initialContent?: string;
+  language?: string;
+  fileId?: string;
+  fileName?: string;
+  onSave?: (content: string) => void;
+  isReadOnly?: boolean;
+}
+
+interface CodeSuggestion {
+  fileId: string;
+  originalCode: string;
+  suggestedCode: string;
+  description: string;
+  startLine?: number;
+  endLine?: number;
+}
+
+export default function CodeEditor({
+  initialContent = "",
+  language = "java",
+  fileId,
+  fileName = "Untitled.java",
+  onSave,
+  isReadOnly = false,
+}: CodeEditorProps) {
+  const [editor, setEditor] = useState<editor.IStandaloneCodeEditor | null>(null);
+  const [content, setContent] = useState(initialContent);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [suggestions, setSuggestions] = useState<CodeSuggestion[]>([]);
+  const { toast } = useToast();
+
+  // Editor initialization
   useEffect(() => {
-    if (!editorRef.current) return;
+    if (typeof window === "undefined") return;
     
-    // Configure Monaco editor
-    configureMonaco();
+    const editorContainer = document.getElementById("monaco-editor-container");
+    if (!editorContainer) return;
     
-    const editor = monaco.editor.create(editorRef.current, {
-      automaticLayout: true,
-      theme: theme === 'dark' ? 'vs-dark' : 'vs',
-      language: 'java',
-      minimap: { enabled: !isMobile },
-      fontSize,
-      fontFamily: "'JetBrains Mono', Consolas, monospace",
-      scrollBeyondLastLine: false,
-      renderLineHighlight: 'all',
-      cursorBlinking: 'smooth',
-      lineNumbers: 'on',
-      renderWhitespace: 'none',
-      tabSize: 2,
-      wordWrap: isMobile ? 'on' : 'off',
-      quickSuggestions: { other: !isMobile, comments: !isMobile, strings: !isMobile }
-    });
-    
-    editorInstanceRef.current = editor;
-    
-    // Update content when file changes
-    if (selectedFile) {
-      editor.setValue(selectedFile.content || '');
-    }
-    
-    // Cleanup function
-    return () => {
+    // Cleanup any existing editor
+    if (editor) {
       editor.dispose();
-    };
-  }, [theme, fontSize, isMobile]);
-  
-  // Update editor content when selected file changes
-  useEffect(() => {
-    if (editorInstanceRef.current && selectedFile) {
-      // Set file content to editor
-      editorInstanceRef.current.setValue(selectedFile.content || '');
-      
-      // Set language based on file extension
-      const ext = selectedFile.name.split('.').pop()?.toLowerCase();
-      if (ext === 'java') {
-        monaco.editor.setModelLanguage(editorInstanceRef.current.getModel()!, 'java');
-      } else if (ext === 'json') {
-        monaco.editor.setModelLanguage(editorInstanceRef.current.getModel()!, 'json');
-      } else if (ext === 'xml') {
-        monaco.editor.setModelLanguage(editorInstanceRef.current.getModel()!, 'xml');
-      } else if (ext === 'toml') {
-        monaco.editor.setModelLanguage(editorInstanceRef.current.getModel()!, 'ini');
-      }
-      
-      // Set up change event listener to update file content
-      const disposable = editorInstanceRef.current.onDidChangeModelContent(() => {
-        if (selectedFile) {
-          const content = editorInstanceRef.current?.getValue() || '';
-          updateFileContent(selectedFile.path, content);
-        }
+    }
+    
+    // Create new editor
+    const newEditor = monaco.editor.create(editorContainer, {
+      value: initialContent,
+      language: language,
+      theme: "vs-dark",
+      automaticLayout: true,
+      minimap: { enabled: true },
+      readOnly: isReadOnly,
+      scrollBeyondLastLine: false,
+      fontSize: 14,
+      lineNumbers: "on",
+      wordWrap: "on",
+      renderLineHighlight: "all",
+      roundedSelection: true,
+      cursorBlinking: "smooth",
+    });
+    
+    setEditor(newEditor);
+    
+    const model = newEditor.getModel();
+    if (model) {
+      // Listen for content changes
+      const disposable = model.onDidChangeContent(() => {
+        setContent(newEditor.getValue());
       });
       
       return () => {
         disposable.dispose();
+        newEditor.dispose();
       };
     }
-  }, [selectedFile, updateFileContent]);
-  
-  if (!selectedFile) {
-    return (
-      <div className="flex-1 bg-background-dark flex items-center justify-center text-text-muted">
-        <p>Select a file to edit</p>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="flex flex-col h-full bg-background-dark border-r border-gray-800">
-      {/* Tab Bar */}
-      <div className="flex items-center justify-between border-b border-gray-800 bg-background-panel text-sm">
-        <div className="flex items-center px-4 py-2 bg-gray-800 flex-shrink-0">
-          <span className="text-emerald-400 whitespace-nowrap overflow-ellipsis overflow-hidden max-w-[180px]">
-            {selectedFile.name}
-          </span>
-          {!isMobile && (
-            <button className="text-gray-400 hover:text-white ml-2">
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+    
+    return () => {
+      newEditor.dispose();
+    };
+  }, [initialContent, language, isReadOnly]);
+
+  // Handle window resize for fullscreen
+  useEffect(() => {
+    const handleResize = () => {
+      if (editor) {
+        editor.layout();
+      }
+    };
+    
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [editor]);
+
+  // Method to save content
+  const handleSave = useCallback(() => {
+    if (onSave) {
+      onSave(content);
+      toast({
+        title: "File saved",
+        description: `${fileName} has been saved successfully.`,
+      });
+    }
+  }, [content, fileName, onSave, toast]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S or Cmd+S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSave]);
+
+  // Apply code suggestion to editor
+  const applyCodeSuggestion = (suggestion: CodeSuggestion) => {
+    if (!editor || !fileId || suggestion.fileId !== fileId) return;
+    
+    const model = editor.getModel();
+    if (!model) return;
+    
+    // If specific lines are provided, use them
+    if (suggestion.startLine !== undefined && suggestion.endLine !== undefined) {
+      const startPosition = { lineNumber: suggestion.startLine, column: 1 };
+      const endPosition = { lineNumber: suggestion.endLine + 1, column: 1 };
+      
+      editor.executeEdits("suggestion", [
+        {
+          range: new monaco.Range(
+            startPosition.lineNumber,
+            startPosition.column,
+            endPosition.lineNumber,
+            endPosition.column
+          ),
+          text: suggestion.suggestedCode,
+        },
+      ]);
+    } 
+    // Otherwise try to find and replace the original code
+    else if (suggestion.originalCode) {
+      const content = model.getValue();
+      const updatedContent = content.replace(suggestion.originalCode, suggestion.suggestedCode);
+      
+      if (content !== updatedContent) {
+        editor.setValue(updatedContent);
+      } else {
+        // If replacement didn't work, append to the end
+        editor.setValue(content + "\n\n" + suggestion.suggestedCode);
+      }
+    } 
+    // Just append the code if no other option works
+    else {
+      const content = model.getValue();
+      editor.setValue(content + "\n\n" + suggestion.suggestedCode);
+    }
+    
+    toast({
+      title: "Code applied",
+      description: suggestion.description || "Suggested code has been applied.",
+    });
+    
+    // Remove the applied suggestion
+    setSuggestions(suggestions.filter(s => s !== suggestion));
+  };
+
+  // Listen for code suggestions from Claude via an event listener
+  useEffect(() => {
+    const handleCodeSuggestion = (e: Event) => {
+      const event = e as CustomEvent<CodeSuggestion>;
+      if (event.detail && fileId && event.detail.fileId === fileId) {
+        setSuggestions(prev => [...prev, event.detail]);
         
-        {/* Font size controls and actions for mobile */}
-        <div className="flex items-center px-2">
-          {isMobile ? (
-            <>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={saveMod}
-              >
-                <Save className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={runMod}
-              >
-                <PlayIcon className="h-4 w-4" />
-              </Button>
-            </>
-          ) : null}
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8" 
-            onClick={decreaseFontSize}
+        toast({
+          title: "New code suggestion",
+          description: "Claude has suggested code changes for this file.",
+        });
+      }
+    };
+    
+    window.addEventListener("codeSuggestion", handleCodeSuggestion as EventListener);
+    return () => window.removeEventListener("codeSuggestion", handleCodeSuggestion as EventListener);
+  }, [fileId, toast]);
+
+  return (
+    <div 
+      className={`flex flex-col ${isFullscreen ? "fixed inset-0 z-50 bg-gray-900" : "h-full"}`}
+    >
+      <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700">
+        <div className="text-sm font-mono text-gray-300">{fileName}</div>
+        <div className="flex gap-2">
+          {!isReadOnly && (
+            <Button 
+              size="sm"
+              variant="outline"
+              onClick={handleSave}
+              className="h-8 text-xs bg-gray-700 hover:bg-gray-600"
+            >
+              Save
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="h-8 w-8 p-0"
           >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8" 
-            onClick={resetFontSize}
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"  
-            className="h-8 w-8"
-            onClick={increaseFontSize}
-          >
-            <ZoomIn className="h-4 w-4" />
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </Button>
         </div>
       </div>
       
-      {/* Editor Content */}
-      <div 
-        ref={editorRef} 
-        className="flex-1 overflow-hidden"
-        style={{ fontFamily: "'JetBrains Mono', monospace" }}
-      />
+      <div className="relative flex-1">
+        <div 
+          id="monaco-editor-container"
+          className="absolute inset-0"
+        />
+      </div>
+      
+      {suggestions.length > 0 && (
+        <div className="p-2 bg-gray-800 border-t border-gray-700 max-h-40 overflow-y-auto">
+          <h3 className="text-sm font-semibold text-gray-300 mb-2">Code Suggestions</h3>
+          <div className="space-y-2">
+            {suggestions.map((suggestion, index) => (
+              <Card key={index} className="p-2 bg-gray-700">
+                <div className="flex justify-between items-center">
+                  <div className="text-xs text-gray-300">{suggestion.description || "Code suggestion"}</div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => applyCodeSuggestion(suggestion)}
+                    className="h-7 text-xs bg-emerald-800 hover:bg-emerald-700 border-emerald-700"
+                  >
+                    <Check className="h-3 w-3 mr-1" /> Apply
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
