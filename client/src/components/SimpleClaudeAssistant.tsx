@@ -451,7 +451,7 @@ export default function SimpleClaudeAssistant({
                       <Button
                         variant="default"
                         size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-3 flex items-center gap-1"
+                        className="bg-blue-600 hover:bg-blue-700 text-white h-6 px-2 flex items-center gap-1 text-xs rounded-sm"
                         onClick={() => {
                           const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
                           if (lastAssistantMsg) {
@@ -461,7 +461,7 @@ export default function SimpleClaudeAssistant({
                         title="Replay last response"
                         disabled={isSpeaking}
                       >
-                        <RepeatIcon className="h-3.5 w-3.5" />
+                        <RepeatIcon className="h-3 w-3" />
                         <span className="text-xs">Replay</span>
                       </Button>
                     </div>
@@ -566,7 +566,7 @@ export default function SimpleClaudeAssistant({
               <Button
                 variant="default"
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white h-8 px-3 flex items-center gap-1"
+                className="bg-blue-600 hover:bg-blue-700 text-white h-6 px-2 flex items-center gap-1 text-xs rounded-sm"
                 onClick={() => {
                   if (messages.length > 0) {
                     speakText(messages[messages.length - 1].content);
@@ -575,7 +575,7 @@ export default function SimpleClaudeAssistant({
                 title="Replay last response"
                 disabled={isSpeaking}
               >
-                <RepeatIcon className="h-4 w-4" />
+                <RepeatIcon className="h-3 w-3" />
                 <span className="text-xs">Replay</span>
               </Button>
             )}
