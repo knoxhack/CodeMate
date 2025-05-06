@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import Anthropic from '@anthropic-ai/sdk';
+import { setupAuth } from "./auth";
 
 // Initialize Anthropic client with API key
 const anthropic = new Anthropic({
@@ -12,6 +13,8 @@ const anthropic = new Anthropic({
 const CLAUDE_MODEL = "claude-3-7-sonnet-20250219";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication
+  setupAuth(app);
   // Chat with Claude
   app.post("/api/chat", async (req, res) => {
     try {
