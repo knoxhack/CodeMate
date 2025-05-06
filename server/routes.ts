@@ -30,14 +30,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user!.id;
       const projects = await storage.getProjectsByUserId(userId);
       
-      // Add template property for backwards compatibility with existing projects
+      // Add template property for all projects since it's not in the database schema
       const projectsWithTemplate = projects.map(project => {
-        // @ts-ignore - Adding template property even if it doesn't exist in the schema
-        if (!project.template) {
-          // @ts-ignore
-          project.template = "empty";
-        }
-        return project;
+        return {
+          ...project,
+          template: "empty" // Default to empty template for existing projects
+        };
       });
       
       res.json(projectsWithTemplate);
@@ -54,15 +52,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       const userId = req.user!.id;
-      const projectData = { ...req.body, userId };
+      // Extract template before sending to database since it's not in our schema yet
+      const { template, ...projectDataWithoutTemplate } = req.body;
+      const projectData = { ...projectDataWithoutTemplate, userId };
+      
       const project = await storage.createProject(projectData);
       
       // If a template is specified, create template files
-      if (projectData.template && projectData.template !== "empty") {
-        await createTemplateFiles(project.id, projectData.template);
+      if (template && template !== "empty") {
+        await createTemplateFiles(project.id, template);
       }
       
-      res.status(201).json(project);
+      // Return project with template info added
+      res.status(201).json({
+        ...project,
+        template: template || "empty"
+      });
     } catch (error: any) {
       console.error("Error creating project:", error);
       res.status(500).json({ error: "Failed to create project: " + error.message });
