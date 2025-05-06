@@ -13,7 +13,8 @@ import {
   Check,
   Mic,
   Volume2,
-  VolumeX
+  VolumeX,
+  Repeat as RepeatIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -77,19 +78,19 @@ export default function SimpleClaudeAssistant({
   
   // Text-to-speech for assistant messages
   useEffect(() => {
-    // If collapsed mode and last message is from assistant, speak it
-    if (!isExpanded && messages.length > 0) {
+    // Automatically speak the assistant's response in both expanded and collapsed mode
+    if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'assistant' && !isSpeaking) {
         speakText(lastMessage.content);
       }
     }
     
-    // Stop speaking when expanded
+    // Stop speaking when expanded and changing modes
     if (isExpanded && isSpeaking) {
       stopSpeaking();
     }
-  }, [isExpanded, messages]);
+  }, [messages]);
   
   // Function to speak text aloud
   const speakText = (text: string) => {
@@ -425,8 +426,50 @@ export default function SimpleClaudeAssistant({
                   </div>
                 </div>
               ) : (
-                // Render message history
-                messages.map((msg, index) => renderMessage(msg, index))
+                <>
+                  {/* Audio controls for expanded view */}
+                  {messages.length > 0 && (
+                    <div className="flex items-center justify-end gap-2 mb-3">
+                      <Button
+                        variant={isSpeaking ? "secondary" : "outline"}
+                        size="sm"
+                        className={`h-7 w-7 p-0 ${isSpeaking ? "bg-blue-600/50 border-blue-500" : "border-gray-600"}`}
+                        onClick={isSpeaking ? stopSpeaking : () => {
+                          if (messages.length > 0) {
+                            const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+                            if (lastAssistantMsg) {
+                              speakText(lastAssistantMsg.content);
+                            }
+                          }
+                        }}
+                        title={isSpeaking ? "Stop speaking" : "Read last response"}
+                      >
+                        {isSpeaking ? <VolumeX className="h-3.5 w-3.5 text-white" /> : <Volume2 className="h-3.5 w-3.5 text-blue-400" />}
+                      </Button>
+                      
+                      {/* Replay Button for expanded view */}
+                      {!isSpeaking && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 w-7 p-0 border-gray-600"
+                          onClick={() => {
+                            const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+                            if (lastAssistantMsg) {
+                              speakText(lastAssistantMsg.content);
+                            }
+                          }}
+                          title="Replay last response"
+                        >
+                          <RepeatIcon className="h-3.5 w-3.5 text-blue-400" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Render message history */}
+                  {messages.map((msg, index) => renderMessage(msg, index))}
+                </>
               )}
               <div ref={messagesEndRef} />
             </div>
@@ -500,6 +543,7 @@ export default function SimpleClaudeAssistant({
           
           <div className="flex items-center gap-2">
             {/* Voice Controls */}
+            {/* Play/Stop Button */}
             <Button
               variant={isSpeaking ? "secondary" : "outline"}
               size="sm"
@@ -511,11 +555,29 @@ export default function SimpleClaudeAssistant({
                   speakText("Hello, I'm Claude, your AI assistant for NeoForge modding. How can I help you today?");
                 }
               }}
-              title={isSpeaking ? "Stop speaking" : "Text to speech"}
+              title={isSpeaking ? "Stop speaking" : "Play last response"}
             >
               {isSpeaking ? <VolumeX className="h-4 w-4 text-white" /> : <Volume2 className="h-4 w-4 text-blue-400" />}
             </Button>
             
+            {/* Replay Button - Only show if there's a message to replay */}
+            {messages.length > 0 && !isSpeaking && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0 border-gray-600"
+                onClick={() => {
+                  if (messages.length > 0) {
+                    speakText(messages[messages.length - 1].content);
+                  }
+                }}
+                title="Replay last response"
+              >
+                <RepeatIcon className="h-4 w-4 text-blue-400" />
+              </Button>
+            )}
+            
+            {/* Voice Input Button */}
             <Button
               variant={isListening ? "secondary" : "outline"}
               size="sm"
