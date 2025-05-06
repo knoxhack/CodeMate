@@ -6,6 +6,7 @@ import { queryClient } from "./lib/queryClient";
 import { AuthProvider } from "./hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
 import { BiomeThemeProvider } from "./context/BiomeThemeContext";
+import BiomeTextureOverlay from "./components/BiomeTextureOverlay";
 
 // Pages
 import Home from "./pages/home";
@@ -31,7 +32,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BiomeThemeProvider>
-          <div className={`${theme} min-h-screen transition-colors duration-500`}>
+          <div className={`${theme} min-h-screen transition-colors duration-500 relative`}>
+            <BiomeTextureOverlay opacity={0.08} />
             <Toaster />
             <Router />
           </div>

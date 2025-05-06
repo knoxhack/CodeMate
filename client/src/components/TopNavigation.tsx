@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import BiomeThemeSelector from "@/components/BiomeThemeSelector";
 
 interface TopNavigationProps {
   isMobile?: boolean;
@@ -52,6 +53,9 @@ export default function TopNavigation({ isMobile, onMenuClick }: TopNavigationPr
             </DropdownMenuContent>
           </DropdownMenu>
           
+          {/* Compact theme selector for mobile */}
+          <BiomeThemeSelector variant="iconOnly" showRandomize={false} />
+          
           <Button variant="ghost" size="icon" onClick={toggleTheme}>
             {theme === 'dark' ? (
               <Sun className="h-5 w-5" />
@@ -95,6 +99,12 @@ export default function TopNavigation({ isMobile, onMenuClick }: TopNavigationPr
           <Save className="h-4 w-4 mr-1" />
           Save
         </button>
+        
+        {/* Biome Theme Selector - full version for desktop */}
+        <div className="mr-1">
+          <BiomeThemeSelector variant="iconAndLabel" showRandomize={true} />
+        </div>
+        
         <button 
           className="bg-background-dark hover:bg-gray-700 text-white px-3 py-1 rounded text-sm flex items-center"
         >

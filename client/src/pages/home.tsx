@@ -8,6 +8,9 @@ import { Loader2, Code, FileCode, Terminal, Settings, Book } from "lucide-react"
 import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import CreateProjectModal from "@/components/CreateProjectModal";
+import BiomeThemeBanner from "@/components/BiomeThemeBanner";
+import BiomeThemeSelector from "@/components/BiomeThemeSelector";
+import { useBiomeTheme } from "@/context/BiomeThemeContext";
 
 export default function Home() {
   const { user, logoutMutation } = useAuth();

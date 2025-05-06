@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Minecraft-style pixel font fallback */
+@font-face {
+  font-family: 'MinecraftFont';
+  src: local('Minecraft'), local('Minecraft Regular'),
+       url('data:font/woff2;base64,d09GMgABAAAAAAQoAA4AAAAABuwAAAQEAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAAg0oKjHCJDQE2AiQDEAsaAAQgBYVSB4EtG6EHUZQzEpH9R4LZI0RYpQFmG8v5Rr9JLlmj3HwLPkBsEvS7t9z9/E0iaeKtw2aIhEQaD9Eo9q/+fPafD/CrVCpU0pmn++QrZ1r/OtMZyvyqcfz/3x0sxSL0//l3fgpudWqNwCCWdFLOxOgGwNDgUL8M/Jf87NNRf1eGK5kO44+HicPOhVE13QAPm2+wMCsA2AUAAF5nZS0UAEFvgPZ3u3sAQO8mQA+9AQB43X/6AwB4+VRoANR1p4HzARb7MFsMAOlZGCYwADsATAASAGJKvJOiLn0AAAC2Avc2TwUwZAzK9QwwblaxTjaBhQgADCHjMoVEjJM7lxZtGO5XEAnEX8GMc44MCnmScOzMQcQIYnkv1pGu9Fm0vMzQCxDZUKMRY2y8GTWk1f2F0Z7KICTkSfqLYYZZVnRl3JMZxPtKnCTy7QDivKQPP34eXzVkzuixRLDPf94f4gqWuH1TUqZ4mWdmPz+p0OUTCw85FPHGz+8vZP6ikAgODXsX9Hvev/FHg1rXg2PX3PzV+9O/3ZDz/4WIXfYrn/jd5+sj8fnF7Ik1vz/EI15/EYiZ9uB6MfZU8bTiyRFYe7rkVMFpo7XH+JcVFxkR0eA/A1PG0x3Rq+cqYUFMsYmEIosCGO4FI73HFLvvlMVaYE/Ww3wUaxlrz6Gshz57/aP8DI1GZ8KkS9/BZ9dpVHqfvGAE6bQ5/kVwJXdVJJPz+QVZcjGXD+ZRseyKAlzEZcgTeXCxgFwiLOLypDlVNlTLlUlyhYVciYCcy+ZJJAIeW8IVFhYCEKBzjKaGU4xKPk9ZyENlZTFXUiABtxUHIhH1k+nBYhL1hBIllaZeGh2hxGCqwRKKDZPpSoKW6m1Qm9oN4jGIJUOsFqQdcMURRwNbXS2K24ixeN4IxTCFk8qlpBrm0lJrCm5RMJEhLrZeGkcGDaXRMSyxWDVGHpI4EwuF87A5Z+4P5MgCc8+ZG/8RqAbR9dPbdFvYrXJPkLXCQrHZGl43rH6KdyWH3bm22TYuSLxAH/pyzWAYVqB/rkmm6hqBxjoAeS9oSEHQXAV3nwhikYDZ38IItLTy1YhRSAKKn6AQ5o2KBBC4e4JtUn5UPvnKAJhdKq+FcaoRdNyjnCBjJpjIESPu3OhRZnvEzLiPtUNLKaUxPNLvT4Brf0HvBxKyQ9tMJADGhBPQlGQlEiDkh8nPnQE=')
+       format('woff2');
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* Minecraft-style font class */
+.font-minecraft {
+  font-family: 'MinecraftFont', 'Courier New', monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
 :root {
   /* Default UI colors */
   --background: 0 0% 100%;
