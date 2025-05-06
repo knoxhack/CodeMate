@@ -466,21 +466,28 @@ export default function SimpleClaudeAssistant({
         </>
       ) : (
         /* Voice Assistant Mode */
-        <div className="p-3 flex items-center justify-between">
+        <div className="p-3 flex items-center justify-between bg-gray-800/60 border-t border-gray-700">
           <div className="flex items-center gap-3">
+            {/* Voice Mode Indicator */}
+            <div className="flex-shrink-0 bg-blue-600/30 rounded-full p-1.5">
+              <Volume2 className="h-4 w-4 text-blue-400" />
+            </div>
+            
             {/* Message Indicator / Last Message */}
             <div className="flex-grow">
               {messages.length > 0 ? (
-                <div className="text-sm text-gray-300 truncate max-w-[150px]">
-                  <span className="text-xs text-gray-400">Last:</span> {
+                <div className="text-sm text-gray-300 truncate max-w-[200px]">
+                  <span className="text-xs font-medium text-blue-400">Voice mode:</span> {
                     messages[messages.length - 1].content
-                      .replace(/```[\s\S]*?```/g, "[code block]")
+                      .replace(/```[\s\S]*?```/g, "[code]")
                       .substring(0, 50)
                   }
                   {messages[messages.length - 1].content.length > 50 && "..."}
                 </div>
               ) : (
-                <div className="text-sm text-gray-400">No messages yet</div>
+                <div className="text-sm text-gray-300">
+                  <span className="text-xs font-medium text-blue-400">Voice mode active</span> - Ready for commands
+                </div>
               )}
             </div>
           </div>
@@ -488,31 +495,35 @@ export default function SimpleClaudeAssistant({
           <div className="flex items-center gap-2">
             {/* Voice Controls */}
             <Button
-              variant={isSpeaking ? "secondary" : "ghost"}
+              variant={isSpeaking ? "secondary" : "outline"}
               size="sm"
-              className={`h-8 w-8 p-0 ${isSpeaking ? "bg-blue-600/30" : ""}`}
+              className={`h-8 w-8 p-0 ${isSpeaking ? "bg-blue-600/50 border-blue-500" : "border-gray-600"}`}
               onClick={isSpeaking ? stopSpeaking : () => {
                 if (messages.length > 0) {
                   speakText(messages[messages.length - 1].content);
+                } else {
+                  speakText("Hello, I'm Claude, your AI assistant for NeoForge modding. How can I help you today?");
                 }
               }}
+              title={isSpeaking ? "Stop speaking" : "Text to speech"}
             >
-              {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              {isSpeaking ? <VolumeX className="h-4 w-4 text-white" /> : <Volume2 className="h-4 w-4 text-blue-400" />}
             </Button>
             
             <Button
-              variant={isListening ? "secondary" : "ghost"}
+              variant={isListening ? "secondary" : "outline"}
               size="sm"
-              className={`h-8 w-8 p-0 ${isListening ? "bg-green-600/30" : ""}`}
+              className={`h-8 w-8 p-0 ${isListening ? "bg-green-600/50 border-green-500" : "border-gray-600"}`}
               onClick={startListening}
               disabled={isListening || isProcessing}
+              title="Voice input"
             >
-              <Mic className={`h-4 w-4 ${isListening ? "text-green-400" : ""}`} />
+              <Mic className={`h-4 w-4 ${isListening ? "text-white" : "text-green-400"}`} />
             </Button>
             
             {/* Processing Indicator */}
             {isProcessing && (
-              <div className="h-4 w-4 ml-1 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+              <div className="h-5 w-5 ml-1 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
             )}
           </div>
         </div>
