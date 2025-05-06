@@ -42,8 +42,15 @@ export default function ClaudeAssistant() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim() && !isClaudeThinking) {
-      addUserMessage(message);
-      setMessage("");
+      console.log("Submit triggered with message:", message);
+      try {
+        addUserMessage(message);
+        console.log("addUserMessage called successfully");
+        setMessage("");
+      } catch (error) {
+        console.error("Error in handleSubmit:", error);
+        alert("There was an error sending your message. Please try again.");
+      }
     }
   };
   

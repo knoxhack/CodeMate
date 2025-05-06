@@ -129,6 +129,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
   
   const addUserMessage = async (content: string) => {
+    console.log("addUserMessage called with:", content);
+    
     const userMessage: ChatMessage = {
       role: 'user',
       content
@@ -136,13 +138,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     setChatMessages(prev => [...prev, userMessage]);
     setIsClaudeThinking(true);
+    console.log("Claude thinking state set to:", true);
     
     try {
       // Demo mode - simulate a response
       // This is a fallback since the API key is out of credits
       // In a real app, this would be replaced with the actual API call
+      console.log("Starting fallback response generation");
       
       // Simulate API response delay
+      console.log("Simulating delay...");
       await new Promise(resolve => setTimeout(resolve, 3000));
       
       let responseText = "";
@@ -270,8 +275,16 @@ What specific aspect of Minecraft modding are you working on right now? I'd be h
         role: 'assistant',
         content: responseText
       };
+      console.log("Created assistant message:", assistantMessage);
       
-      setChatMessages(prev => [...prev, assistantMessage]);
+      setChatMessages(prev => {
+        console.log("Previous chat messages:", prev);
+        const updated = [...prev, assistantMessage];
+        console.log("Updated chat messages:", updated);
+        return updated;
+      });
+      
+      console.log("Assistant message added to chat");
     } catch (error) {
       console.error('Error getting response from Claude:', error);
       setChatMessages(prev => [
@@ -281,8 +294,10 @@ What specific aspect of Minecraft modding are you working on right now? I'd be h
           content: 'I encountered an error processing your request. Please try again.'
         }
       ]);
+      console.log("Error response added to chat");
     } finally {
       setIsClaudeThinking(false);
+      console.log("Claude thinking state set to:", false);
     }
   };
   
