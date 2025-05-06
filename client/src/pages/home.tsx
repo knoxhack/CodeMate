@@ -10,6 +10,7 @@ import { getQueryFn } from "@/lib/queryClient";
 import CreateProjectModal from "@/components/CreateProjectModal";
 import BiomeThemeBanner from "@/components/BiomeThemeBanner";
 import BiomeThemeSelector from "@/components/BiomeThemeSelector";
+import BiomeTextureOverlay from "@/components/BiomeTextureOverlay";
 import { useBiomeTheme } from "@/context/BiomeThemeContext";
 
 export default function Home() {
