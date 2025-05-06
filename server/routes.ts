@@ -57,9 +57,17 @@ You are not just a code generator. You are a full development assistant that:
 
 3. **Strict NeoForge 1.21.5 Techniques**
 - Always use \`DeferredRegister\` + \`RegistryObject\`
-- Use the new \`DataComponent\` system (\`WEAPON\`, \`TOOL\`, \`ARMOR\`, etc.)
+- Use the new \`DataComponent\` system (\`WEAPON\`, \`TOOL\`, \`ARMOR\`, \`BLOCKS_ATTACKS\`, etc.)
 - Register through correct lifecycle events (\`RegisterEvent\`, \`FMLClientSetupEvent\`, etc.)
-- Do not use pre-1.21.5 approaches like \`SwordItem\`, direct \`Registry.register\`, etc.
+- Do not use pre-1.21.5 approaches like \`SwordItem\`, \`DiggerItem\`, \`ArmorItem\`, direct \`Registry.register\`, etc.
+- Handle block entity removal properly using \`BlockEntity#preRemoveSideEffects\` and \`BlockBehaviour#affectNeighborsAfterRemoval\`
+- Use new VoxelShape helpers for shape transformations
+- Replace old-style tools and weapons:
+  * Use \`Item\` with \`WEAPON\` component instead of \`SwordItem\`
+  * Use \`Item\` with \`TOOL\` component instead of \`DiggerItem\`
+  * Use \`Item\` with \`ARMOR\` component instead of \`ArmorItem\`
+  * Use \`Item\` with \`BLOCKS_ATTACKS\` component for shields
+- Utilize Item Properties builders like \`.sword()\`, \`.axe()\`, \`.pickaxe()\` instead of extending tool classes
 
 4. **Full File & Resource Generation**
 - Output full Java classes with accurate file paths (e.g., \`mod/block/CorruptOreBlock.java\`)
@@ -136,9 +144,17 @@ When generating code, please provide complete, well-formatted implementations.`;
       
 Follow these strict NeoForge 1.21.5 guidelines:
 - Always use \`DeferredRegister\` + \`RegistryObject\`
-- Use the new \`DataComponent\` system (\`WEAPON\`, \`TOOL\`, \`ARMOR\`, etc.)
+- Use the new \`DataComponent\` system (\`WEAPON\`, \`TOOL\`, \`ARMOR\`, \`BLOCKS_ATTACKS\`, etc.)
 - Register through correct lifecycle events (\`RegisterEvent\`, \`FMLClientSetupEvent\`, etc.)
-- Do not use pre-1.21.5 approaches like \`SwordItem\`, direct \`Registry.register\`, etc.
+- Do not use pre-1.21.5 approaches like \`SwordItem\`, \`DiggerItem\`, \`ArmorItem\`, direct \`Registry.register\`, etc.
+- Handle block entity removal properly using \`BlockEntity#preRemoveSideEffects\` and \`BlockBehaviour#affectNeighborsAfterRemoval\`
+- Use new VoxelShape helpers for shape transformations
+- Replace old-style tools and weapons:
+  * Use \`Item\` with \`WEAPON\` component instead of \`SwordItem\`
+  * Use \`Item\` with \`TOOL\` component instead of \`DiggerItem\`
+  * Use \`Item\` with \`ARMOR\` component instead of \`ArmorItem\`
+  * Use \`Item\` with \`BLOCKS_ATTACKS\` component for shields
+- Utilize Item Properties builders like \`.sword()\`, \`.axe()\`, \`.pickaxe()\` instead of extending tool classes
 
 Generate complete, correct, and working code based on the provided prompt.
 Only output code without any explanation or markdown formatting.
@@ -176,9 +192,17 @@ The programming language is ${language || 'Java'}.`;
       
 Follow these strict NeoForge 1.21.5 guidelines:
 - Always use \`DeferredRegister\` + \`RegistryObject\`
-- Use the new \`DataComponent\` system (\`WEAPON\`, \`TOOL\`, \`ARMOR\`, etc.)
+- Use the new \`DataComponent\` system (\`WEAPON\`, \`TOOL\`, \`ARMOR\`, \`BLOCKS_ATTACKS\`, etc.)
 - Register through correct lifecycle events (\`RegisterEvent\`, \`FMLClientSetupEvent\`, etc.)
-- Do not use pre-1.21.5 approaches like \`SwordItem\`, direct \`Registry.register\`, etc.
+- Do not use pre-1.21.5 approaches like \`SwordItem\`, \`DiggerItem\`, \`ArmorItem\`, direct \`Registry.register\`, etc.
+- Handle block entity removal properly using \`BlockEntity#preRemoveSideEffects\` and \`BlockBehaviour#affectNeighborsAfterRemoval\`
+- Use new VoxelShape helpers for shape transformations
+- Replace old-style tools and weapons:
+  * Use \`Item\` with \`WEAPON\` component instead of \`SwordItem\`
+  * Use \`Item\` with \`TOOL\` component instead of \`DiggerItem\`
+  * Use \`Item\` with \`ARMOR\` component instead of \`ArmorItem\`
+  * Use \`Item\` with \`BLOCKS_ATTACKS\` component for shields
+- Utilize Item Properties builders like \`.sword()\`, \`.axe()\`, \`.pickaxe()\` instead of extending tool classes
 
 Look for common problems in mods:
 - Missing registry entries
