@@ -1,4 +1,4 @@
-import { useAppContext } from "@/context/AppContext";
+import { useAppContext } from "@/hooks/useAppContext";
 import { useTheme } from "@/hooks/use-theme";
 import { Moon, Sun, Menu, Play, HardDrive, Save, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";

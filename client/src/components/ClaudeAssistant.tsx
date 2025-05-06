@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useAppContext } from "@/context/AppContext";
+import { useAppContext } from "@/hooks/useAppContext";
 import { MoreVertical, SendHorizonal, RotateCcw, Wrench, ArrowRightCircle } from "lucide-react";
 import { ChatMessage } from "@/types/project";
 import { cn } from "@/lib/utils";

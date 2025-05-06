@@ -1,15 +1,41 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as monaco from "monaco-editor";
-import { useAppContext } from "@/context/AppContext";
+import { useAppContext } from "@/hooks/useAppContext";
 import { configureMonaco } from "@/lib/monaco-config";
 import { useTheme } from "@/hooks/use-theme";
-import { X } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { X, ZoomIn, ZoomOut, RotateCcw, PlayIcon, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function CodeEditor() {
   const editorRef = useRef<HTMLDivElement>(null);
   const editorInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-  const { selectedFile, updateFileContent } = useAppContext();
+  const { selectedFile, updateFileContent, runMod, saveMod } = useAppContext();
   const { theme } = useTheme();
+  const isMobile = useIsMobile();
+  const [fontSize, setFontSize] = useState(isMobile ? 16 : 14);
+  
+  const increaseFontSize = () => {
+    setFontSize(prev => {
+      const newSize = prev + 1;
+      editorInstanceRef.current?.updateOptions({ fontSize: newSize });
+      return newSize;
+    });
+  };
+  
+  const decreaseFontSize = () => {
+    setFontSize(prev => {
+      const newSize = Math.max(12, prev - 1);
+      editorInstanceRef.current?.updateOptions({ fontSize: newSize });
+      return newSize;
+    });
+  };
+  
+  const resetFontSize = () => {
+    const defaultSize = isMobile ? 16 : 14;
+    setFontSize(defaultSize);
+    editorInstanceRef.current?.updateOptions({ fontSize: defaultSize });
+  };
   
   useEffect(() => {
     if (!editorRef.current) return;
@@ -21,8 +47,8 @@ export default function CodeEditor() {
       automaticLayout: true,
       theme: theme === 'dark' ? 'vs-dark' : 'vs',
       language: 'java',
-      minimap: { enabled: false },
-      fontSize: 14,
+      minimap: { enabled: !isMobile },
+      fontSize,
       fontFamily: "'JetBrains Mono', Consolas, monospace",
       scrollBeyondLastLine: false,
       renderLineHighlight: 'all',
@@ -30,6 +56,8 @@ export default function CodeEditor() {
       lineNumbers: 'on',
       renderWhitespace: 'none',
       tabSize: 2,
+      wordWrap: isMobile ? 'on' : 'off',
+      quickSuggestions: { other: !isMobile, comments: !isMobile, strings: !isMobile }
     });
     
     editorInstanceRef.current = editor;
@@ -43,7 +71,7 @@ export default function CodeEditor() {
     return () => {
       editor.dispose();
     };
-  }, [theme]);
+  }, [theme, fontSize, isMobile]);
   
   // Update editor content when selected file changes
   useEffect(() => {
@@ -88,12 +116,65 @@ export default function CodeEditor() {
   return (
     <div className="flex flex-col h-full bg-background-dark border-r border-gray-800">
       {/* Tab Bar */}
-      <div className="flex items-center border-b border-gray-800 bg-background-panel text-sm">
-        <div className="flex items-center px-4 py-2 border-r border-gray-800 bg-gray-800">
-          <span className="mr-2 text-emerald-400">{selectedFile.name}</span>
-          <button className="text-gray-400 hover:text-white">
-            <X className="h-4 w-4" />
-          </button>
+      <div className="flex items-center justify-between border-b border-gray-800 bg-background-panel text-sm">
+        <div className="flex items-center px-4 py-2 bg-gray-800 flex-shrink-0">
+          <span className="text-emerald-400 whitespace-nowrap overflow-ellipsis overflow-hidden max-w-[180px]">
+            {selectedFile.name}
+          </span>
+          {!isMobile && (
+            <button className="text-gray-400 hover:text-white ml-2">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        
+        {/* Font size controls and actions for mobile */}
+        <div className="flex items-center px-2">
+          {isMobile ? (
+            <>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8" 
+                onClick={saveMod}
+              >
+                <Save className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8" 
+                onClick={runMod}
+              >
+                <PlayIcon className="h-4 w-4" />
+              </Button>
+            </>
+          ) : null}
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8" 
+            onClick={decreaseFontSize}
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8" 
+            onClick={resetFontSize}
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"  
+            className="h-8 w-8"
+            onClick={increaseFontSize}
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
         </div>
       </div>
       
