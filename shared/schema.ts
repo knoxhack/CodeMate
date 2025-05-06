@@ -25,7 +25,7 @@ export const projects = pgTable("projects", {
   modVersion: text("mod_version").notNull().default("1.0.0"),
   minecraftVersion: text("minecraft_version").notNull().default("1.21.5"),
   neoForgeVersion: text("neoforge_version").notNull().default("1.21.5"),
-  template: text("template").default("empty"), // New field for mod template
+  // Removed template field as we're handling it in the API layer instead
 });
 
 export const insertProjectSchema = createInsertSchema(projects).pick({
@@ -35,7 +35,12 @@ export const insertProjectSchema = createInsertSchema(projects).pick({
   modVersion: true,
   minecraftVersion: true,
   neoForgeVersion: true,
-  template: true,
+});
+
+// Extend the schema to include template, even though it's not in the database
+export const projectWithTemplateSchema = z.object({
+  ...insertProjectSchema.shape,
+  template: z.string().default("empty"),
 });
 
 // Project files
