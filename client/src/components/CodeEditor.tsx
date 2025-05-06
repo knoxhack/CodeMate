@@ -6,6 +6,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { X, ZoomIn, ZoomOut, RotateCcw, PlayIcon, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CodeSuggestion } from "@/types/project";
 
 export default function CodeEditor() {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -37,6 +38,64 @@ export default function CodeEditor() {
     editorInstanceRef.current?.updateOptions({ fontSize: defaultSize });
   };
   
+  // Handle applying a code suggestion from Claude
+  const applyCodeSuggestion = (suggestion: CodeSuggestion) => {
+    if (!editorInstanceRef.current || !selectedFile) return;
+    
+    // Only apply if the current file path matches the suggestion file path
+    const currentPath = selectedFile.path;
+    const suggestionPath = suggestion.fileId;
+    
+    console.log("Checking file paths:", {currentPath, suggestionPath});
+    
+    // If the file paths match, apply the suggestion
+    if (currentPath.endsWith(suggestionPath) || suggestionPath.endsWith(currentPath)) {
+      console.log("Applying code suggestion to file");
+      
+      const currentContent = editorInstanceRef.current.getValue();
+      let newContent = currentContent;
+      
+      // If original code is found, replace it
+      if (currentContent.includes(suggestion.originalCode)) {
+        newContent = currentContent.replace(
+          suggestion.originalCode, 
+          suggestion.suggestedCode
+        );
+        
+        // Update the editor content
+        editorInstanceRef.current.setValue(newContent);
+        
+        // Update the file content in the app context
+        updateFileContent(selectedFile.path, newContent);
+        
+        console.log("Code suggestion applied successfully");
+      } else {
+        console.warn("Could not find original code in the file");
+        // If the original code isn't found, show a warning
+        alert("Could not locate the code segment to replace. The file may have been modified.");
+      }
+    } else {
+      console.log("File paths don't match");
+      // If the file paths don't match, show a message
+      alert(`This suggestion is for file: ${suggestion.fileId}. Please open that file to apply this suggestion.`);
+    }
+  };
+  
+  // Listen for code suggestion events from Claude
+  useEffect(() => {
+    const handleCodeSuggestion = (e: Event) => {
+      const event = e as CustomEvent<CodeSuggestion>;
+      console.log("Received code suggestion event:", event.detail);
+      applyCodeSuggestion(event.detail);
+    };
+    
+    window.addEventListener('claude-code-suggestion', handleCodeSuggestion);
+    
+    return () => {
+      window.removeEventListener('claude-code-suggestion', handleCodeSuggestion);
+    };
+  }, [selectedFile]);
+
   useEffect(() => {
     if (!editorRef.current) return;
     

@@ -171,11 +171,35 @@ Some key things to remember when developing for 1.21.5:
 What specific aspect of Minecraft modding are you working on right now? I'd be happy to help with more detailed information.`;
       }
       
-      // Create assistant message
+      // Create assistant message with code suggestions
       const assistantMessage: ChatMessage = {
         role: 'assistant',
         content: responseText
       };
+      
+      // Add code suggestions for "sword" or "weapon" related queries
+      if (content.toLowerCase().includes("sword") || content.toLowerCase().includes("weapon")) {
+        assistantMessage.codeSuggestions = [
+          {
+            fileId: "src/main/java/com/example/MySword.java", // This path should match an existing file in the project
+            originalCode: "// Old code example\npublic class MySword extends SwordItem {\n    public MySword() {\n        super(Tiers.DIAMOND, 3, -2.4F, new Item.Properties());\n    }\n}",
+            suggestedCode: "// New code with DataComponent system\nimport net.minecraft.world.item.Item;\nimport net.minecraft.world.item.component.Weapon;\nimport net.minecraft.core.component.DataComponents;\n\npublic class MySword {\n    public static final Item INSTANCE = new Item(new Item.Properties()\n        .sword()\n        .durability(1250)\n        .add(DataComponents.WEAPON, new Weapon(3, 5f)));\n}",
+            description: "Convert SwordItem to use the new DataComponent system in NeoForge 1.21.5"
+          }
+        ];
+      }
+      
+      // Add code suggestions for error fixing
+      if (content.toLowerCase().includes("error") || content.toLowerCase().includes("fix")) {
+        assistantMessage.codeSuggestions = [
+          {
+            fileId: "src/main/java/com/example/MyMod.java",
+            originalCode: "// Incorrect registration\npublic static final RegistryObject<Item> RUBY_SWORD = ITEMS.register(\"ruby_sword\", \n    () -> new SwordItem(Tiers.DIAMOND, 3, -2.4F, new Item.Properties()));\n",
+            suggestedCode: "// Correct registration with DataComponent\npublic static final RegistryObject<Item> RUBY_SWORD = ITEMS.register(\"ruby_sword\", \n    () -> new Item(new Item.Properties()\n        .sword()\n        .durability(1250)\n        .add(DataComponents.WEAPON, new Weapon(3, 5f))));\n",
+            description: "Fix registration to use DataComponent instead of SwordItem"
+          }
+        ];
+      }
       
       setChatMessages(prev => [...prev, assistantMessage]);
       console.log("Added Claude response to chat");
@@ -282,6 +306,33 @@ What specific aspect of Minecraft modding are you working on right now? I'd be h
     setChatMessages([]);
   };
 
+  // Handle applying code suggestions
+  const handleApplySuggestion = (suggestion: CodeSuggestion) => {
+    // First, find the file in the project structure
+    try {
+      console.log("Applying suggestion to:", suggestion.fileId);
+      console.log("Suggested code:", suggestion.suggestedCode);
+      
+      // Find the project file
+      if (!suggestion.fileId) {
+        console.error("No file ID provided in the suggestion");
+        return;
+      }
+      
+      // Dispatch a custom event that the CodeEditor component will listen for
+      const event = new CustomEvent('claude-code-suggestion', { 
+        detail: suggestion 
+      });
+      window.dispatchEvent(event);
+      
+      // Show a success message
+      alert("Code suggestion applied! Check the editor.");
+    } catch (error) {
+      console.error("Error applying suggestion:", error);
+      alert("Failed to apply the code suggestion. Please try again.");
+    }
+  };
+  
   // Window resize listener for mobile detection
   useEffect(() => {
     const handleResize = () => {
@@ -398,6 +449,41 @@ What specific aspect of Minecraft modding are you working on right now? I'd be h
                       {i < msg.content.split('\n').length - 1 && <br />}
                     </div>
                   ))}
+                  
+                  {/* Code Suggestions Section */}
+                  {msg.role === 'assistant' && msg.codeSuggestions && msg.codeSuggestions.length > 0 && (
+                    <div className="mt-4 border-t border-gray-700 pt-3">
+                      <div className="flex items-center mb-2">
+                        <Code className="h-4 w-4 mr-2 text-amber-400" />
+                        <span className="text-amber-400 font-medium">Code Suggestions</span>
+                      </div>
+                      <div className="space-y-3">
+                        {msg.codeSuggestions.map((suggestion, index) => (
+                          <div key={index} className="bg-gray-800 rounded p-2">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <Badge variant="outline" className="bg-amber-900/20 text-amber-400 border-amber-800 mb-1">
+                                  {suggestion.fileId.split('/').pop()}
+                                </Badge>
+                                <p className="text-xs text-gray-300">{suggestion.description}</p>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                className="h-7 bg-amber-700 hover:bg-amber-800 text-white"
+                                onClick={() => handleApplySuggestion(suggestion)}
+                              >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Apply
+                              </Button>
+                            </div>
+                            <div className="text-xs bg-gray-900 p-2 rounded overflow-x-auto">
+                              <pre className="text-gray-300">{suggestion.suggestedCode}</pre>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
