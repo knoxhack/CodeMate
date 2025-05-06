@@ -14,7 +14,8 @@ import {
   Mic,
   Volume2,
   VolumeX,
-  Repeat as RepeatIcon
+  Repeat as RepeatIcon,
+  Info as InfoIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
