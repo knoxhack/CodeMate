@@ -377,23 +377,34 @@ export default function ProjectEditor() {
       )}
 
       {/* AI Assistant Chat */}
-      <div className="border-b border-gray-700 bg-gray-800/30 p-3">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 bg-blue-600/20 rounded-full p-2">
-            <Zap className="h-5 w-5 text-blue-400" />
-          </div>
-          <div className="flex-grow">
-            <h3 className="text-sm font-medium text-gray-200">Claude Code Assistant</h3>
-            <p className="text-xs text-gray-400 mt-1">
-              I can help you with coding, suggest improvements, and debug your NeoForge 1.21.5 mod.
-            </p>
-          </div>
-          <Button size="sm" variant="outline" className="flex-shrink-0">
-            <MessageSquare className="h-4 w-4 mr-1" />
-            <span>Ask</span>
-          </Button>
-        </div>
-      </div>
+      <EnhancedClaudeAssistant
+        projectId={projectId}
+        projectName={project?.name || "Project"}
+        files={files}
+        currentFile={selectedFile}
+        onApplySuggestion={(suggestion) => {
+          // This would be implemented to apply code suggestions to the editor
+          console.log("Applying suggestion:", suggestion);
+          if (editorRef.current && suggestion.code) {
+            // Insert the suggested code at cursor position
+            const position = editorRef.current.getPosition();
+            if (position) {
+              editorRef.current.executeEdits("", [
+                {
+                  range: new monaco.Range(
+                    position.lineNumber,
+                    position.column,
+                    position.lineNumber,
+                    position.column
+                  ),
+                  text: suggestion.code
+                }
+              ]);
+              setUnsavedChanges(true);
+            }
+          }
+        }}
+      />
 
       {/* Main content - Mobile First Layout */}
       <div className="flex-grow flex flex-col relative">
