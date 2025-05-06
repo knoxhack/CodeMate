@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { ChatMessage, CodeSuggestion } from "@/types/project";
 import { cn } from "@/lib/utils";
+import { processContentWithCodeBlocks, highlightCode } from "@/lib/syntax-highlighter";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -443,12 +444,22 @@ What specific aspect of Minecraft modding are you working on right now? I'd be h
                   "p-3 rounded",
                   msg.role === 'user' ? "bg-gray-800/50" : "bg-background-dark"
                 )}>
-                  {msg.content.split('\n').map((line, i) => (
-                    <div key={i}>
-                      {line}
-                      {i < msg.content.split('\n').length - 1 && <br />}
-                    </div>
-                  ))}
+                  {msg.role === 'assistant' ? (
+                    <div 
+                      className="claude-message" 
+                      dangerouslySetInnerHTML={{ 
+                        __html: processContentWithCodeBlocks(msg.content) 
+                      }} 
+                    />
+                  ) : (
+                    // Regular text for user messages
+                    msg.content.split('\n').map((line, i) => (
+                      <div key={i}>
+                        {line}
+                        {i < msg.content.split('\n').length - 1 && <br />}
+                      </div>
+                    ))
+                  )}
                   
                   {/* Code Suggestions Section */}
                   {msg.role === 'assistant' && msg.codeSuggestions && msg.codeSuggestions.length > 0 && (
@@ -477,7 +488,12 @@ What specific aspect of Minecraft modding are you working on right now? I'd be h
                               </Button>
                             </div>
                             <div className="text-xs bg-gray-900 p-2 rounded overflow-x-auto">
-                              <pre className="text-gray-300">{suggestion.suggestedCode}</pre>
+                              <pre 
+                                className="language-java"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: highlightCode(suggestion.suggestedCode, 'java') 
+                                }}
+                              ></pre>
                             </div>
                           </div>
                         ))}
