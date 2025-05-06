@@ -255,15 +255,17 @@ export default function SimpleClaudeAssistant({
     setIsProcessing(true);
     
     try {
-      // Call Claude API via our backend using the helper function
-      // Pass the isVoiceMode flag based on whether the UI is collapsed
-      const assistantMessage = await getChatResponse([...messages, userMessage], !isExpanded);
+      // Call Claude API via our backend
+      // Only use voice mode when the UI is collapsed 
+      // (this is the key change - voice mode is disabled when expanded)
+      const useVoiceMode = !isExpanded;
+      const assistantMessage = await getChatResponse([...messages, userMessage], useVoiceMode);
       
       // Update messages state with response
       setMessages(prev => [...prev, assistantMessage]);
       setIsProcessing(false);
       
-      // If in voice mode, automatically read the response
+      // Only auto-read responses in collapsed/voice mode 
       if (!isExpanded && !isSpeaking) {
         speakText(assistantMessage.content);
       }
@@ -451,42 +453,49 @@ export default function SimpleClaudeAssistant({
                 </div>
               ) : (
                 <>
-                  {/* Voice controls for expanded view */}
+                  {/* Manual audio playback controls for expanded view (not voice mode) */}
                   {!isListening && (
-                    <div className="flex items-center justify-end gap-2 mb-4">
-                      {/* Play/Stop Button */}
-                      <Button
-                        variant={isSpeaking ? "secondary" : "outline"}
-                        size="sm"
-                        className={`h-7 w-7 p-0 ${isSpeaking ? "bg-blue-600/50 border-blue-500" : "border-gray-600"}`}
-                        onClick={isSpeaking ? stopSpeaking : () => {
-                          const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
-                          if (lastAssistantMsg) {
-                            speakText(lastAssistantMsg.content);
-                          }
-                        }}
-                        title={isSpeaking ? "Stop speaking" : "Play last response"}
-                      >
-                        {isSpeaking ? <VolumeX className="h-3.5 w-3.5 text-white" /> : <Volume2 className="h-3.5 w-3.5 text-blue-400" />}
-                      </Button>
+                    <div className="flex flex-col items-end gap-2 mb-4">
+                      <div className="flex items-center gap-1.5 bg-gray-800/70 px-2 py-1 rounded text-xs text-gray-400">
+                        <InfoIcon className="h-3 w-3" />
+                        <span>Voice mode disabled in expanded view</span>
+                      </div>
                       
-                      {/* VERY prominent Replay Button for expanded view */}
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white h-6 px-2 flex items-center gap-1 text-xs rounded-sm"
-                        onClick={() => {
-                          const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
-                          if (lastAssistantMsg) {
-                            speakText(lastAssistantMsg.content);
-                          }
-                        }}
-                        title="Replay last response"
-                        disabled={isSpeaking}
-                      >
-                        <RepeatIcon className="h-3 w-3" />
-                        <span className="text-xs">Replay</span>
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {/* Play/Stop Button */}
+                        <Button
+                          variant={isSpeaking ? "secondary" : "outline"}
+                          size="sm"
+                          className={`h-7 w-7 p-0 ${isSpeaking ? "bg-blue-600/50 border-blue-500" : "border-gray-600"}`}
+                          onClick={isSpeaking ? stopSpeaking : () => {
+                            const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+                            if (lastAssistantMsg) {
+                              speakText(lastAssistantMsg.content);
+                            }
+                          }}
+                          title={isSpeaking ? "Stop speaking" : "Play last response"}
+                        >
+                          {isSpeaking ? <VolumeX className="h-3.5 w-3.5 text-white" /> : <Volume2 className="h-3.5 w-3.5 text-blue-400" />}
+                        </Button>
+                      
+                        {/* Manual replay button for expanded view */}
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700 text-white h-6 px-2 flex items-center gap-1 text-xs rounded-sm"
+                          onClick={() => {
+                            const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+                            if (lastAssistantMsg) {
+                              speakText(lastAssistantMsg.content);
+                            }
+                          }}
+                          title="Replay last response"
+                          disabled={isSpeaking}
+                        >
+                          <RepeatIcon className="h-3 w-3" />
+                          <span className="text-xs">Replay</span>
+                        </Button>
+                      </div>
                     </div>
                   )}
                   

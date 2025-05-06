@@ -13,7 +13,8 @@ const anthropic = new Anthropic({
 // Claude Sonnet - the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
 const CLAUDE_SONNET_MODEL = "claude-3-7-sonnet-20250219";
 // Claude Code - specialized for code editing and generation
-const CLAUDE_CODE_MODEL = "claude-3-7-opus-20240229";
+// Note: Using the same model for both code and voice since claude-3-7-opus-20240229 doesn't exist
+const CLAUDE_CODE_MODEL = "claude-3-7-sonnet-20250219";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
