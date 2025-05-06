@@ -218,7 +218,7 @@ export default function CreateProjectModal({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create New Mod Project</DialogTitle>
@@ -305,8 +305,8 @@ export default function CreateProjectModal({
           
           {/* Template Selection Step */}
           {step === "template" && (
-            <div className="py-4 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="py-4 space-y-4 max-h-[50vh] overflow-y-auto">
+              <div className="grid grid-cols-1 gap-4">
                 {modTemplates.map((template) => (
                   <Card 
                     key={template.id} 
@@ -347,7 +347,7 @@ export default function CreateProjectModal({
             </div>
           )}
           
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 pt-2 bg-background border-t mt-4">
             {step === "template" ? (
               <>
                 <Button 

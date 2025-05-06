@@ -29,7 +29,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id;
       const projects = await storage.getProjectsByUserId(userId);
-      res.json(projects);
+      
+      // Add template property for backwards compatibility with existing projects
+      const projectsWithTemplate = projects.map(project => {
+        // @ts-ignore - Adding template property even if it doesn't exist in the schema
+        if (!project.template) {
+          // @ts-ignore
+          project.template = "empty";
+        }
+        return project;
+      });
+      
+      res.json(projectsWithTemplate);
     } catch (error: any) {
       console.error("Error getting projects:", error);
       res.status(500).json({ error: "Failed to fetch projects: " + error.message });
