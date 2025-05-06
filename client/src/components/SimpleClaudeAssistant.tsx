@@ -448,22 +448,21 @@ export default function SimpleClaudeAssistant({
                       </Button>
                       
                       {/* Replay Button for expanded view */}
-                      {!isSpeaking && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 w-7 p-0 border-gray-600"
-                          onClick={() => {
-                            const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
-                            if (lastAssistantMsg) {
-                              speakText(lastAssistantMsg.content);
-                            }
-                          }}
-                          title="Replay last response"
-                        >
-                          <RepeatIcon className="h-3.5 w-3.5 text-blue-400" />
-                        </Button>
-                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 w-7 p-0 border-blue-600/40 hover:bg-blue-600/20"
+                        onClick={() => {
+                          const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+                          if (lastAssistantMsg) {
+                            speakText(lastAssistantMsg.content);
+                          }
+                        }}
+                        title="Replay last response"
+                        disabled={isSpeaking}
+                      >
+                        <RepeatIcon className="h-3.5 w-3.5 text-blue-400" />
+                      </Button>
                     </div>
                   )}
                   
@@ -560,18 +559,19 @@ export default function SimpleClaudeAssistant({
               {isSpeaking ? <VolumeX className="h-4 w-4 text-white" /> : <Volume2 className="h-4 w-4 text-blue-400" />}
             </Button>
             
-            {/* Replay Button - Only show if there's a message to replay */}
-            {messages.length > 0 && !isSpeaking && (
+            {/* Replay Button - Always show it when there are messages */}
+            {messages.length > 0 && (
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 w-8 p-0 border-gray-600"
+                className="h-8 w-8 p-0 border-blue-600/40 hover:bg-blue-600/20"
                 onClick={() => {
                   if (messages.length > 0) {
                     speakText(messages[messages.length - 1].content);
                   }
                 }}
                 title="Replay last response"
+                disabled={isSpeaking}
               >
                 <RepeatIcon className="h-4 w-4 text-blue-400" />
               </Button>
