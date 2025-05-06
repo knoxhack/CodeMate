@@ -154,32 +154,43 @@ export default function ClaudeAssistant() {
       <div className="flex-1 overflow-y-auto p-3 space-y-4 text-sm">
         {chatMessages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400">
-            <div className="mb-4 text-center">
-              <p className="text-lg mb-2">Welcome to CodeMate!</p>
-              <p className="text-sm">Ask Claude for help with your Minecraft mod development</p>
+            <div className="w-16 h-16 mb-6 rounded-full bg-gradient-to-r from-amber-500 to-amber-700 flex items-center justify-center">
+              <span className="text-white text-2xl font-bold">C</span>
             </div>
-            <div className="grid grid-cols-1 gap-2 w-full max-w-lg">
+            <div className="mb-6 text-center">
+              <h2 className="text-xl font-bold mb-1 text-amber-400">CodeMate Assistant</h2>
+              <p className="text-sm max-w-md">Your AI partner for NeoForge 1.21.5 Minecraft mod development. Ask anything about mod creation, error fixing, or best practices.</p>
+            </div>
+            <div className="grid grid-cols-1 gap-3 w-full max-w-md bg-background-dark/50 p-4 rounded-lg border border-gray-800">
+              <h3 className="text-sm font-medium text-gray-300 mb-1">Try asking about:</h3>
               <Button
                 variant="outline"
-                className="text-left text-xs justify-start border-gray-600 h-auto py-2"
-                onClick={() => addUserMessage("Help me create a custom Minecraft sword")}
+                className="text-left text-xs justify-start border-gray-700 h-auto py-3 hover:bg-background-dark hover:border-amber-700/50"
+                onClick={() => addUserMessage("Help me create a custom sword with the new DataComponent system")}
               >
-                Create custom sword
+                "Create a custom sword with DataComponent"
               </Button>
               <Button
                 variant="outline"
-                className="text-left text-xs justify-start border-gray-600 h-auto py-2"
+                className="text-left text-xs justify-start border-gray-700 h-auto py-3 hover:bg-background-dark hover:border-amber-700/50"
+                onClick={() => addUserMessage("How do I convert my old SwordItem code to use the new 1.21.5 DataComponent system?")}
+              >
+                "Convert SwordItem to use DataComponent"
+              </Button>
+              <Button
+                variant="outline"
+                className="text-left text-xs justify-start border-gray-700 h-auto py-3 hover:bg-background-dark hover:border-amber-700/50"
                 onClick={() => addUserMessage("What should I do next in my mod development?")}
               >
-                Continue development
+                "Continue my mod development"
               </Button>
               <Button
                 variant="outline"
-                className="text-left text-xs justify-start border-gray-600 h-auto py-2"
+                className="text-left text-xs justify-start border-gray-700 h-auto py-3 hover:bg-background-dark hover:border-amber-700/50 flex items-center"
                 onClick={() => setShowFileUpload(true)}
               >
-                <FilePlus className="h-4 w-4 mr-2" />
-                Share files with Claude
+                <FilePlus className="h-4 w-4 mr-2 text-amber-500" />
+                "Share files with Claude for analysis"
               </Button>
             </div>
           </div>
@@ -207,10 +218,18 @@ export default function ClaudeAssistant() {
               </div>
             ))}
             {isClaudeThinking && (
-              <div className="flex items-center space-x-2 p-3 bg-background-dark rounded animate-pulse">
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{animationDelay: '200ms'}} />
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{animationDelay: '400ms'}} />
+              <div className="flex items-center p-4 mb-2 bg-background-dark rounded-lg border border-amber-900/30">
+                <div className="mr-3">
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{animationDelay: '200ms'}} />
+                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style={{animationDelay: '400ms'}} />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="text-amber-400 text-sm font-medium mb-1">Claude is thinking...</div>
+                  <div className="text-gray-400 text-xs">{thinkingFrames[thinkingFrame]}</div>
+                </div>
               </div>
             )}
           </>
@@ -221,48 +240,77 @@ export default function ClaudeAssistant() {
       {/* File Upload Panel */}
       {showFileUpload && (
         <div className="border-t border-gray-800 p-3">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium">Share Files with Claude</h3>
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center">
+              <FilePlus className="h-5 w-5 mr-2 text-amber-500" />
+              <h3 className="text-sm font-medium text-amber-400">Share Files with Claude</h3>
+            </div>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-6 w-6" 
+              className="h-6 w-6 hover:bg-gray-800" 
               onClick={() => setShowFileUpload(false)}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
           
-          <div className="space-y-2">
-            <div className="flex items-center justify-center border border-dashed border-gray-600 rounded p-4">
+          <div className="space-y-3">
+            <p className="text-xs text-gray-400">Share Java files or logs with Claude to get detailed help with your mod development.</p>
+            
+            <div className="flex items-center justify-center border border-dashed border-amber-800/50 bg-background-dark/50 rounded-lg p-5">
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileUpload}
                 className="hidden"
                 multiple
+                accept=".java,.txt,.json,.log,.gradle,.toml,.properties,.mcmeta"
               />
-              <Button 
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Select Files
-              </Button>
+              <div className="flex flex-col items-center">
+                <Upload className="h-6 w-6 mb-2 text-amber-500" />
+                <Button 
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center mb-2 border-amber-700/50 hover:border-amber-500"
+                >
+                  Browse Files
+                </Button>
+                <p className="text-xs text-gray-500">
+                  .java, .json, .gradle, .toml, .log, etc.
+                </p>
+              </div>
             </div>
             
             {uploadedFiles.length > 0 && (
-              <div className="space-y-2 mt-2">
-                <h4 className="text-xs font-medium">Selected Files:</h4>
+              <div className="space-y-2 mt-3 bg-background-dark rounded-lg p-3 border border-gray-800">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-medium text-amber-400">
+                    Selected Files ({uploadedFiles.length})
+                  </h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs h-6"
+                    onClick={() => setUploadedFiles([])}
+                  >
+                    Clear All
+                  </Button>
+                </div>
                 <div className="max-h-32 overflow-y-auto space-y-1">
                   {uploadedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between bg-background-dark p-2 rounded text-xs">
-                      <span className="truncate">{file.name}</span>
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between bg-gray-800/50 p-2 rounded text-xs hover:bg-gray-800"
+                    >
+                      <div className="flex items-center overflow-hidden">
+                        <FilePlus2 className="h-3 w-3 mr-2 flex-shrink-0 text-amber-500" />
+                        <span className="truncate">{file.name}</span>
+                      </div>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-5 w-5" 
+                        className="h-5 w-5 hover:bg-gray-700" 
                         onClick={() => handleRemoveFile(index)}
                       >
                         <X className="h-3 w-3" />
@@ -272,9 +320,10 @@ export default function ClaudeAssistant() {
                 </div>
                 <Button
                   variant="default"
-                  className="w-full mt-2"
+                  className="w-full mt-3 bg-amber-700 hover:bg-amber-800 transition-colors"
                   onClick={handleSendFiles}
                 >
+                  <Upload className="h-3 w-3 mr-2" />
                   Share Files with Claude
                 </Button>
               </div>
