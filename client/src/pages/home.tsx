@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import CreateProjectModal from "@/components/CreateProjectModal";
 
 export default function Home() {
   const { user, logoutMutation } = useAuth();
+  const [, navigate] = useLocation();
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   interface Project {
@@ -157,7 +159,7 @@ export default function Home() {
                     </p>
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full">Open Project</Button>
+                    <Button className="w-full" onClick={() => navigate(`/projects/${project.id}`)}>Open Project</Button>
                   </CardFooter>
                 </Card>
               ))}
