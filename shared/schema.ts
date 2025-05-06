@@ -25,6 +25,7 @@ export const projects = pgTable("projects", {
   modVersion: text("mod_version").notNull().default("1.0.0"),
   minecraftVersion: text("minecraft_version").notNull().default("1.21.5"),
   neoForgeVersion: text("neoforge_version").notNull().default("1.21.5"),
+  template: text("template").default("empty"), // New field for mod template
 });
 
 export const insertProjectSchema = createInsertSchema(projects).pick({
@@ -34,6 +35,7 @@ export const insertProjectSchema = createInsertSchema(projects).pick({
   modVersion: true,
   minecraftVersion: true,
   neoForgeVersion: true,
+  template: true,
 });
 
 // Project files
