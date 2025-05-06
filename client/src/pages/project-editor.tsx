@@ -382,7 +382,7 @@ export default function ProjectEditor() {
         projectId={projectId}
         projectName={project?.name || "Project"}
         files={files}
-        currentFile={selectedFile}
+        currentFile={selectedFile || undefined}
         onApplySuggestion={(suggestion) => {
           // This would be implemented to apply code suggestions to the editor
           console.log("Applying suggestion:", suggestion);

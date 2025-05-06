@@ -10,7 +10,10 @@ import {
   Send,
   FileText,
   Copy,
-  Check
+  Check,
+  Mic,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -60,14 +63,124 @@ export default function SimpleClaudeAssistant({
   const [messages, setMessages] = useState<Message[]>([]);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const speechSynthesis = window.speechSynthesis;
   const { toast } = useToast();
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+  
+  // Text-to-speech for assistant messages
+  useEffect(() => {
+    // If collapsed mode and last message is from assistant, speak it
+    if (!isExpanded && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant' && !isSpeaking) {
+        speakText(lastMessage.content);
+      }
+    }
+    
+    // Stop speaking when expanded
+    if (isExpanded && isSpeaking) {
+      stopSpeaking();
+    }
+  }, [isExpanded, messages]);
+  
+  // Function to speak text aloud
+  const speakText = (text: string) => {
+    // Don't speak code blocks
+    const cleanText = text.replace(/```[\s\S]*?```/g, "Code block omitted for speech.");
+    
+    if (speechSynthesis) {
+      // Stop any current speech
+      stopSpeaking();
+      
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      
+      // Get available voices and choose a good one
+      const voices = speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.name.includes('Google') || voice.name.includes('Female') || voice.name.includes('English')
+      );
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      
+      speechSynthesis.speak(utterance);
+    }
+  };
+  
+  // Function to stop speaking
+  const stopSpeaking = () => {
+    if (speechSynthesis) {
+      speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  };
+  
+  // Function to start speech recognition
+  const startListening = () => {
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      // @ts-ignore - TypeScript doesn't have built-in types for the Web Speech API
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+      
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast({
+          title: "Voice Recognition Active",
+          description: "Speak now...",
+        });
+      };
+      
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setMessage(transcript);
+        setTimeout(() => {
+          handleSendMessage();
+        }, 500);
+      };
+      
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error);
+        setIsListening(false);
+        toast({
+          title: "Voice Recognition Error",
+          description: event.error,
+          variant: "destructive"
+        });
+      };
+      
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognition.start();
+    } else {
+      toast({
+        title: "Voice Recognition Not Supported",
+        description: "Your browser doesn't support the Speech Recognition API.",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Function to extract code blocks from message content
   const extractCodeBlocks = (content: string): CodeSuggestion[] => {
@@ -282,7 +395,7 @@ export default function SimpleClaudeAssistant({
         </Button>
       </div>
       
-      {isExpanded && (
+      {isExpanded ? (
         <>
           {/* Chat content */}
           <ScrollArea className="flex-grow h-[240px]">
@@ -351,6 +464,58 @@ export default function SimpleClaudeAssistant({
             </div>
           </div>
         </>
+      ) : (
+        /* Voice Assistant Mode */
+        <div className="p-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Message Indicator / Last Message */}
+            <div className="flex-grow">
+              {messages.length > 0 ? (
+                <div className="text-sm text-gray-300 truncate max-w-[150px]">
+                  <span className="text-xs text-gray-400">Last:</span> {
+                    messages[messages.length - 1].content
+                      .replace(/```[\s\S]*?```/g, "[code block]")
+                      .substring(0, 50)
+                  }
+                  {messages[messages.length - 1].content.length > 50 && "..."}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-400">No messages yet</div>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Voice Controls */}
+            <Button
+              variant={isSpeaking ? "secondary" : "ghost"}
+              size="sm"
+              className={`h-8 w-8 p-0 ${isSpeaking ? "bg-blue-600/30" : ""}`}
+              onClick={isSpeaking ? stopSpeaking : () => {
+                if (messages.length > 0) {
+                  speakText(messages[messages.length - 1].content);
+                }
+              }}
+            >
+              {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </Button>
+            
+            <Button
+              variant={isListening ? "secondary" : "ghost"}
+              size="sm"
+              className={`h-8 w-8 p-0 ${isListening ? "bg-green-600/30" : ""}`}
+              onClick={startListening}
+              disabled={isListening || isProcessing}
+            >
+              <Mic className={`h-4 w-4 ${isListening ? "text-green-400" : ""}`} />
+            </Button>
+            
+            {/* Processing Indicator */}
+            {isProcessing && (
+              <div className="h-4 w-4 ml-1 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
