@@ -21,6 +21,7 @@ import {
   Settings, RefreshCcw, Search, X, MessageSquare, Terminal,
   FolderOpen, FileText, ChevronRight, ChevronDown, File
 } from "lucide-react";
+import SimpleClaudeAssistant from "@/components/SimpleClaudeAssistant";
 
 // Import specialized features
 import IntelligentCodeCompletion from "@/components/features/IntelligentCodeCompletion";
@@ -377,7 +378,7 @@ export default function ProjectEditor() {
       )}
 
       {/* AI Assistant Chat */}
-      <EnhancedClaudeAssistant
+      <SimpleClaudeAssistant
         projectId={projectId}
         projectName={project?.name || "Project"}
         files={files}

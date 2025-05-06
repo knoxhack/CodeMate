@@ -12,16 +12,12 @@ import {
   Clock, 
   FileText,
   Send,
-  PanelRightClose,
-  Play,
   Volume2,
   VolumeX,
   X,
   Check,
   Lightbulb,
-  CornerDownRight,
-  Copy,
-  MoreHorizontal
+  Copy
 } from "lucide-react";
 import {
   Tooltip,
@@ -29,12 +25,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -87,7 +77,7 @@ export default function EnhancedClaudeAssistant({
   currentFile,
   onApplySuggestion,
   onMinimize
-}: EnhancedClaudeAssistantProps) {
+}: EnhancedClaudeAssistantProps): JSX.Element {
   // State for the assistant
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -349,8 +339,8 @@ public static final RegistryObject<Block> CUSTOM_BLOCK = BLOCKS.register(
     return files
       .filter(file => 
         terms.some(term => 
-          file.name.toLowerCase().includes(term) || 
-          file.path.toLowerCase().includes(term)
+          file.name?.toLowerCase().includes(term) || 
+          file.path?.toLowerCase().includes(term)
         )
       )
       .map(file => file.path)
