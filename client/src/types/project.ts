@@ -28,6 +28,17 @@ export interface ChatMessage {
   content: string;
   codeBlock?: string;
   timestamp?: Date;
+  codeSuggestions?: CodeSuggestion[]; // Array of code suggestions for editor integration
+}
+
+// Code suggestion from assistant
+export interface CodeSuggestion {
+  fileId: string; // Path of the file to modify
+  originalCode: string; // The code to be replaced
+  suggestedCode: string; // The suggested replacement code
+  description: string; // Description of what the suggestion does
+  startLine?: number; // Start line of the suggestion (optional)
+  endLine?: number; // End line of the suggestion (optional)
 }
 
 // Project metadata

@@ -11,12 +11,15 @@ import {
   FilePlus2,
   ArrowLeft, 
   Maximize, 
-  Minimize
+  Minimize,
+  CheckCircle,
+  Code
 } from "lucide-react";
-import { ChatMessage } from "@/types/project";
+import { ChatMessage, CodeSuggestion } from "@/types/project";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 export default function ClaudeAssistant() {
   const [message, setMessage] = useState("");
