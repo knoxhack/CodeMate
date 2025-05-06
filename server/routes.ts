@@ -9,8 +9,8 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || 'dummy-key', // Use environment variable in production
 });
 
-// Using Claude Code - an Anthropic model specifically optimized for programming
-const CLAUDE_MODEL = "claude-3-7-code-20240307";
+// Using Claude Sonnet - the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
+const CLAUDE_MODEL = "claude-3-7-sonnet-20250219";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
