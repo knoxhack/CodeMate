@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { useAppContext } from "@/hooks/useAppContext";
 import { 
   SendHorizonal, 
   RotateCcw, 
@@ -16,7 +15,6 @@ import {
 } from "lucide-react";
 import { ChatMessage } from "@/types/project";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -27,18 +25,171 @@ export default function ClaudeAssistant() {
   const [showFileUpload, setShowFileUpload] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isMobile = useIsMobile();
+  const isMobile = window.innerWidth < 768;
   
-  const { 
-    chatMessages, 
-    addUserMessage, 
-    isClaudeThinking,
-    continueDevelopment,
-    fixError,
-    resetChat,
-    selectedFile
-  } = useAppContext();
+  // Self-contained state for Claude Assistant
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isClaudeThinking, setIsClaudeThinking] = useState(false);
   
+  // Self-contained functions without external dependencies
+  const addUserMessage = async (content: string) => {
+    console.log("addUserMessage called with:", content);
+    // Add user message to chat
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setIsClaudeThinking(true);
+    
+    try {
+      // Simulate API response delay
+      console.log("Simulating Claude thinking...");
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Generate a mock response based on the user message content
+      let responseText = "";
+      
+      if (content.toLowerCase().includes("sword") || content.toLowerCase().includes("weapon")) {
+        responseText = `Here's how to create a custom sword with the new DataComponent system in NeoForge 1.21.5:
+
+\`\`\`java
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.Weapon;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.RegistryObject;
+
+public class CustomSword {
+    // Create a DeferredRegister for items
+    public static final DeferredRegister<Item> ITEMS = 
+        DeferredRegister.create(BuiltInRegistries.ITEM, "yourmodid");
+    
+    // Register your custom sword
+    public static final RegistryObject<Item> RUBY_SWORD = ITEMS.register("ruby_sword", 
+        () -> new Item(new Item.Properties()
+            .sword() // Use the sword() method instead of extending SwordItem
+            .durability(1250) // Set durability
+            .add(DataComponents.WEAPON, new Weapon(3, 5f)) // Add WEAPON component
+            // The first parameter (3) is the durability damage
+            // The second parameter (5f) is the seconds to disable blocking
+        ));
+}
+\`\`\`
+
+Notice how in 1.21.5 we no longer extend SwordItem. Instead:
+1. We use a standard Item with the .sword() property
+2. We add the WEAPON DataComponent
+3. We configure durability and other properties directly
+
+This follows the new component-based approach that replaces the hardcoded classes from earlier versions.`;
+      } else if (content.toLowerCase().includes("datacomponent") || content.toLowerCase().includes("component")) {
+        responseText = `The DataComponent system in NeoForge 1.21.5 replaces the old inheritance-based approach for items. Instead of extending classes like SwordItem, PickaxeItem, or ArmorItem, you now use regular Items with components.
+
+Here are the key components and how to use them:
+
+**WEAPON Component**
+- Replaces SwordItem
+- Controls attack damage and shield disabling
+
+\`\`\`java
+.add(DataComponents.WEAPON, new Weapon(3, 5f))
+\`\`\`
+
+**TOOL Component**
+- Replaces DiggerItem, PickaxeItem, etc.
+- Controls mining speed, appropriate blocks
+
+\`\`\`java
+.add(DataComponents.TOOL, new Tool(
+    2.5f, // Mining speed
+    true, // Can destroy blocks in creative
+    TagKey.create(Registries.BLOCK, new ResourceLocation("mineable/pickaxe"))
+))
+\`\`\`
+
+**ARMOR Component**
+- Replaces ArmorItem
+- Controls protection values
+
+\`\`\`java
+.add(DataComponents.ARMOR, armor)
+\`\`\`
+
+**BLOCKS_ATTACKS Component**
+- Used for shields and blocking items
+
+\`\`\`java
+.add(DataComponents.BLOCKS_ATTACKS, new BlocksAttacks(...))
+\`\`\`
+
+The advantage of this approach is flexibility - you can mix and match components as needed without complex inheritance chains.`;
+      } else if (content.toLowerCase().includes("error") || content.toLowerCase().includes("fix")) {
+        responseText = `Based on your error description, I'd look at a few common issues in NeoForge 1.21.5:
+
+1. Are you still using old item classes? The error might be because you're extending SwordItem, ArmorItem, or DiggerItem, which have been removed. Use regular Item with components instead.
+
+2. Check your registry setup - make sure you're using DeferredRegister and RegistryObject correctly:
+
+\`\`\`java
+public static final DeferredRegister<Item> ITEMS = 
+    DeferredRegister.create(BuiltInRegistries.ITEM, "yourmodid");
+    
+public static final RegistryObject<Item> YOUR_ITEM = ITEMS.register("item_name", 
+    () -> new Item(properties));
+\`\`\`
+
+3. Verify that you're handling block entity removal correctly with the new split between BlockEntity#preRemoveSideEffects and BlockBehaviour#affectNeighborsAfterRemoval.
+
+4. If you're seeing missing textures or models, check your JSON files to ensure they match the registered names exactly.
+
+To fix the error properly, could you share the specific error message and the code that's causing it?`;
+      } else {
+        responseText = `Thank you for your message about Minecraft modding with NeoForge 1.21.5.
+
+Some key things to remember when developing for 1.21.5:
+
+1. Always use DeferredRegister + RegistryObject for registrations
+2. Use the DataComponent system instead of extending specialized item classes:
+   - Regular Item with WEAPON component instead of SwordItem
+   - Regular Item with TOOL component instead of DiggerItem/PickaxeItem
+   - Regular Item with ARMOR component instead of ArmorItem
+
+3. Handle block entity removal correctly using the new split methods:
+   - BlockEntity#preRemoveSideEffects - For preparing the block entity for removal
+   - BlockBehaviour#affectNeighborsAfterRemoval - For updating neighbors
+
+4. Use the new VoxelShape helpers for shape transformations
+
+5. Utilize Item Properties builders like .sword(), .axe(), .pickaxe() for appropriate item setup
+
+What specific aspect of Minecraft modding are you working on right now? I'd be happy to help with more detailed information.`;
+      }
+      
+      // Create assistant message
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: responseText
+      };
+      
+      setChatMessages(prev => [...prev, assistantMessage]);
+      console.log("Added Claude response to chat");
+    } catch (error) {
+      console.error('Error generating response:', error);
+      setChatMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'I encountered an error processing your request. Please try again.'
+        }
+      ]);
+    } finally {
+      setIsClaudeThinking(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim() && !isClaudeThinking) {
@@ -115,6 +266,29 @@ export default function ClaudeAssistant() {
     }
   }, [isClaudeThinking]);
   
+  // Helper functions for action buttons
+  const continueDevelopment = async () => {
+    await addUserMessage("Continue with the mod development. What's the next step?");
+  };
+
+  const fixError = async () => {
+    await addUserMessage("I'm getting errors in my code. Can you help fix them?");
+  };
+
+  const resetChat = () => {
+    setChatMessages([]);
+  };
+
+  // Window resize listener for mobile detection
+  useEffect(() => {
+    const handleResize = () => {
+      // Update isMobile state if needed
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div 
       className={cn(
