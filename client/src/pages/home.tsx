@@ -53,8 +53,10 @@ export default function Home() {
     );
   }
 
+  const { randomizeTheme } = useBiomeTheme();
+
   return (
-    <div className="min-h-screen bg-gradient-to-r from-gray-900 to-gray-800">
+    <div className="min-h-screen">
       <header className="bg-gray-800/80 border-b border-gray-700">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -63,6 +65,7 @@ export default function Home() {
           </div>
           <div className="flex items-center space-x-4">
             <span className="text-gray-300">Welcome, {user.username}!</span>
+            <BiomeThemeSelector variant="full" />
             <Button variant="outline" onClick={handleLogout} disabled={logoutMutation.isPending}>
               {logoutMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Logout
@@ -72,63 +75,100 @@ export default function Home() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Biome Theme Banner */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Minecraft Mod Development Platform</h1>
-          <p className="text-gray-400">Build professional mods with NeoForge 1.21.5 and Claude Code AI assistance</p>
+          <BiomeThemeBanner className="mb-6" />
+          <div className="flex flex-col md:flex-row md:items-end justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2 font-minecraft">Minecraft Mod Development</h1>
+              <p className="text-gray-300">Build professional NeoForge 1.21.5 mods with Claude AI assistance</p>
+            </div>
+            <Button
+              onClick={randomizeTheme}
+              className="mt-4 md:mt-0 biome-themed-button"
+            >
+              Change Biome Theme
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileCode className="h-5 w-5 mr-2 text-emerald-500" />
+          <Card className="biome-themed-card overflow-hidden relative">
+            <div className="absolute inset-0 opacity-10">
+              <BiomeTextureOverlay isFixed={false} opacity={0.2} />
+            </div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center font-minecraft">
+                <FileCode className="h-5 w-5 mr-2" style={{ color: 'var(--theme-accent)' }} />
                 New Project
               </CardTitle>
-              <CardDescription>Create a new mod project from scratch</CardDescription>
+              <CardDescription className="text-gray-200">Create a new mod project from scratch</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">
+            <CardContent className="relative z-10">
+              <p className="text-sm text-gray-300">
                 Start with a clean NeoForge 1.21.5 MDK setup with all the necessary boilerplate code pre-configured.
               </p>
             </CardContent>
-            <CardFooter>
-              <Button className="w-full" onClick={handleCreateProject}>Create Project</Button>
+            <CardFooter className="relative z-10">
+              <Button 
+                className="w-full biome-themed-button" 
+                onClick={handleCreateProject}
+              >
+                Create Project
+              </Button>
             </CardFooter>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Terminal className="h-5 w-5 mr-2 text-emerald-500" />
+          <Card className="biome-themed-card overflow-hidden relative">
+            <div className="absolute inset-0 opacity-10">
+              <BiomeTextureOverlay isFixed={false} opacity={0.2} />
+            </div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center font-minecraft">
+                <Terminal className="h-5 w-5 mr-2" style={{ color: 'var(--theme-accent)' }} />
                 Import Existing
               </CardTitle>
-              <CardDescription>Import an existing mod for upgrading</CardDescription>
+              <CardDescription className="text-gray-200">Import an existing mod for upgrading</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">
+            <CardContent className="relative z-10">
+              <p className="text-sm text-gray-300">
                 Import existing mods to upgrade to NeoForge 1.21.5 with AI-assisted migration.
               </p>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full" onClick={handleCreateProject}>Import Project</Button>
+            <CardFooter className="relative z-10">
+              <Button 
+                variant="outline" 
+                className="w-full border-gray-600 hover:bg-gray-700/50" 
+                onClick={handleCreateProject}
+              >
+                Import Project
+              </Button>
             </CardFooter>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Book className="h-5 w-5 mr-2 text-emerald-500" />
+          <Card className="biome-themed-card overflow-hidden relative">
+            <div className="absolute inset-0 opacity-10">
+              <BiomeTextureOverlay isFixed={false} opacity={0.2} />
+            </div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center font-minecraft">
+                <Book className="h-5 w-5 mr-2" style={{ color: 'var(--theme-accent)' }} />
                 Guides
               </CardTitle>
-              <CardDescription>Explore tutorials and documentation</CardDescription>
+              <CardDescription className="text-gray-200">Explore tutorials and documentation</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">
+            <CardContent className="relative z-10">
+              <p className="text-sm text-gray-300">
                 Browse tutorials, migration guides, and documentation for NeoForge 1.21.5.
               </p>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">View Guides</Button>
+            <CardFooter className="relative z-10">
+              <Button 
+                variant="outline" 
+                className="w-full border-gray-600 hover:bg-gray-700/50"
+              >
+                View Guides
+              </Button>
             </CardFooter>
           </Card>
         </div>
@@ -149,32 +189,48 @@ export default function Home() {
           ) : projects && projects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project) => (
-                <Card key={project.id}>
-                  <CardHeader>
-                    <CardTitle>{project.name}</CardTitle>
-                    <CardDescription>
+                <Card key={project.id} className="biome-themed-card overflow-hidden relative">
+                  <div className="absolute inset-0 opacity-10">
+                    <BiomeTextureOverlay isFixed={false} opacity={0.2} />
+                  </div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="font-minecraft">{project.name}</CardTitle>
+                    <CardDescription className="text-gray-200">
                       {project.minecraftVersion} • {project.modVersion}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-500 line-clamp-3">
+                  <CardContent className="relative z-10">
+                    <p className="text-sm text-gray-300 line-clamp-3">
                       {project.description}
                     </p>
                   </CardContent>
-                  <CardFooter>
-                    <Button className="w-full" onClick={() => navigate(`/projects/${project.id}`)}>Open Project</Button>
+                  <CardFooter className="relative z-10">
+                    <Button 
+                      className="w-full biome-themed-button" 
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                    >
+                      Open Project
+                    </Button>
                   </CardFooter>
                 </Card>
               ))}
             </div>
           ) : (
-            <div className="bg-gray-800/50 p-8 rounded-lg border border-gray-700 flex flex-col items-center justify-center">
-              <Settings className="h-10 w-10 text-gray-500 mb-4" />
-              <h3 className="text-xl font-medium text-gray-300 mb-2">No projects yet</h3>
-              <p className="text-gray-500 text-center max-w-md mb-6">
+            <div className="biome-themed-card p-8 rounded-lg flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10">
+                <BiomeTextureOverlay isFixed={false} opacity={0.2} />
+              </div>
+              <Settings className="h-10 w-10 mb-4 relative z-10" style={{ color: 'var(--theme-accent)' }} />
+              <h3 className="text-xl font-medium text-gray-100 mb-2 font-minecraft relative z-10">No Projects Yet</h3>
+              <p className="text-gray-300 text-center max-w-md mb-6 relative z-10">
                 Create your first mod project to get started with NeoForge 1.21.5 development.
               </p>
-              <Button onClick={handleCreateProject}>Create Your First Project</Button>
+              <Button 
+                onClick={handleCreateProject} 
+                className="relative z-10 biome-themed-button"
+              >
+                Create Your First Project
+              </Button>
             </div>
           )}
         </div>
