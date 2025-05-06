@@ -230,11 +230,17 @@ export default function SimpleClaudeAssistant({
     
     try {
       // Call Claude API via our backend using the helper function
-      const assistantMessage = await getChatResponse([...messages, userMessage]);
+      // Pass the isVoiceMode flag based on whether the UI is collapsed
+      const assistantMessage = await getChatResponse([...messages, userMessage], !isExpanded);
       
       // Update messages state with response
       setMessages(prev => [...prev, assistantMessage]);
       setIsProcessing(false);
+      
+      // If in voice mode, automatically read the response
+      if (!isExpanded && !isSpeaking) {
+        speakText(assistantMessage.content);
+      }
     } catch (error) {
       console.error("Error communicating with Claude:", error);
       

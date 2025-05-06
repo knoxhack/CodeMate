@@ -5,13 +5,14 @@ import { ChatMessage } from "@/types/project";
 const MODEL = "claude-3-7-sonnet-20250219";
 
 // Get responses from Claude
-export async function getChatResponse(messages: ChatMessage[]): Promise<ChatMessage> {
+export async function getChatResponse(messages: ChatMessage[], isVoiceMode: boolean = false): Promise<ChatMessage> {
   try {
     const response = await apiRequest('POST', '/api/chat', {
       messages: messages.map(msg => ({
         role: msg.role,
         content: msg.content
-      }))
+      })),
+      isVoiceMode: isVoiceMode // Pass the voice mode flag to server
     });
     
     const data = await response.json();
