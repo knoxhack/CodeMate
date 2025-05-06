@@ -6,10 +6,6 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
-import connectPg from "connect-pg-simple";
-import { pool } from "./db";
-
-const PostgresSessionStore = connectPg(session);
 
 declare global {
   namespace Express {
@@ -33,21 +29,14 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  // Create session store
-  const sessionStore = new PostgresSessionStore({
-    pool,
-    createTableIfMissing: true
-  });
-
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || 'minecraft-mod-dev-secret',
+    secret: process.env.SESSION_SECRET || "codemate-secret-key",
     resave: false,
     saveUninitialized: false,
-    store: sessionStore,
+    store: storage.sessionStore,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      secure: process.env.NODE_ENV === "production",
     }
   };
 
@@ -57,31 +46,39 @@ export function setupAuth(app: Express) {
   app.use(passport.session());
 
   passport.use(
-    new LocalStrategy(async (username, password, done) => {
+    new LocalStrategy(async (username: string, password: string, done) => {
       try {
         const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
-          return done(null, false);
-        } else {
-          return done(null, user);
+        if (!user) {
+          return done(null, false, { message: "Incorrect username" });
         }
-      } catch (err) {
-        return done(err);
+        
+        if (!(await comparePasswords(password, user.password))) {
+          return done(null, false, { message: "Incorrect password" });
+        }
+        
+        return done(null, user);
+      } catch (error) {
+        return done(error);
       }
-    }),
+    })
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await storage.getUser(id);
       done(null, user);
-    } catch (err) {
-      done(err);
+    } catch (error) {
+      done(error);
     }
   });
 
-  app.post("/api/register", async (req, res, next) => {
+  // Register endpoint
+  app.post("/api/register", async (req, res) => {
     try {
       const { username, password } = req.body;
       
@@ -89,19 +86,23 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ error: "Username and password are required" });
       }
       
+      // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ error: "Username already exists" });
       }
-
+      
+      // Hash password and create user
       const hashedPassword = await hashPassword(password);
       const user = await storage.createUser({
         username,
         password: hashedPassword,
       });
-
-      req.login(user, (err) => {
-        if (err) return next(err);
+      
+      // Auto-login after registration
+      req.login(user, (err: any) => {
+        if (err) return res.status(500).json({ error: "Failed to login after registration" });
+        
         // Return user without password
         const { password, ...safeUser } = user;
         res.status(201).json(safeUser);

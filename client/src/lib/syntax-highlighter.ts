@@ -1,60 +1,43 @@
 import Prism from 'prismjs';
-
-// Import language definitions
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-markup';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-markdown';
-import 'prismjs/components/prism-yaml';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-groovy';
 import 'prismjs/components/prism-toml';
 
 /**
  * Determines the language for syntax highlighting based on code block context or file extension
  */
 export function detectLanguage(code: string, fileExtension?: string): string {
-  // Use file extension if provided
+  // Use file extension if available
   if (fileExtension) {
-    switch (fileExtension.toLowerCase()) {
-      case 'java': return 'java';
-      case 'json': return 'json';
-      case 'js': return 'javascript';
-      case 'jsx': return 'jsx';
-      case 'ts': return 'typescript';
-      case 'tsx': return 'tsx';
-      case 'css': return 'css';
-      case 'html': return 'html';
-      case 'xml': return 'xml';
-      case 'md': return 'markdown';
-      case 'sh': case 'bash': return 'bash';
-      case 'yaml': case 'yml': return 'yaml';
-      case 'toml': return 'toml';
-      default: return 'java'; // Default to Java for Minecraft mods
-    }
+    const extension = fileExtension.toLowerCase();
+    if (extension === 'java') return 'java';
+    if (extension === 'json') return 'json';
+    if (extension === 'html') return 'markup';
+    if (extension === 'xml') return 'markup';
+    if (extension === 'css') return 'css';
+    if (extension === 'js') return 'javascript';
+    if (extension === 'ts') return 'typescript';
+    if (extension === 'tsx') return 'tsx';
+    if (extension === 'gradle') return 'groovy';
+    if (extension === 'toml') return 'toml';
   }
-
-  // Try to detect from code content
-  if (code.includes('class') && (code.includes('public') || code.includes('private'))) {
-    return 'java';
-  }
-
-  if (code.startsWith('{') && code.endsWith('}')) {
-    return 'json';
-  }
-
-  if (code.includes('function') || code.includes('const ') || code.includes('let ')) {
-    return 'javascript';
-  }
-
-  if (code.includes('<') && code.includes('/>')) {
-    return 'jsx';
-  }
-
-  // Default to Java for Minecraft mod context
+  
+  // Try to detect by code content
+  if (code.includes('class ') && code.includes('public static void main')) return 'java';
+  if (code.includes('import net.minecraft')) return 'java';
+  if (code.includes('import net.neoforged')) return 'java';
+  if (code.trim().startsWith('{') && code.trim().endsWith('}')) return 'json';
+  if (code.includes('<html') || code.includes('<!DOCTYPE')) return 'markup';
+  if (code.includes('function(') || code.includes('=>')) return 'javascript';
+  if (code.includes(':') && code.includes(';')) return 'css';
+  if (code.includes('interface ') && code.includes('extends')) return 'typescript';
+  
+  // Default to java for Minecraft modding context
   return 'java';
 }
 
@@ -62,20 +45,17 @@ export function detectLanguage(code: string, fileExtension?: string): string {
  * Highlights code using Prism.js
  */
 export function highlightCode(code: string, language?: string): string {
-  if (!code) return '';
-  
-  const lang = language || detectLanguage(code);
+  const detectedLanguage = language || detectLanguage(code);
   
   try {
-    // Ensure the language exists in Prism
-    if (Prism.languages[lang]) {
-      return Prism.highlight(code, Prism.languages[lang], lang);
-    } else {
-      // Fallback to plain text if language not supported
-      return code;
+    // Check if Prism has the language loaded
+    if (Prism.languages[detectedLanguage]) {
+      return Prism.highlight(code, Prism.languages[detectedLanguage], detectedLanguage);
     }
+    // Fallback to basic text
+    return code;
   } catch (error) {
-    console.error('Error highlighting code:', error);
+    console.error('Syntax highlighting error:', error);
     return code;
   }
 }
@@ -86,14 +66,12 @@ export function highlightCode(code: string, language?: string): string {
  */
 export function processContentWithCodeBlocks(content: string): string {
   if (!content) return '';
-
-  // Match triple backtick code blocks
-  const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
   
-  return content.replace(codeBlockRegex, (match, lang, code) => {
+  // Replace code blocks with highlighted HTML
+  return content.replace(/```(?:([\w-]+)\n)?([\s\S]*?)```/g, (_, lang, code) => {
     const language = lang || detectLanguage(code);
     const highlightedCode = highlightCode(code, language);
     
-    return `<pre class="prism-code language-${language}"><code class="language-${language}">${highlightedCode}</code></pre>`;
+    return `<pre class="language-${language}"><code class="language-${language}">${highlightedCode}</code></pre>`;
   });
 }

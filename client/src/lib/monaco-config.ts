@@ -1,281 +1,240 @@
-import * as monaco from "monaco-editor";
+import * as monaco from 'monaco-editor';
 
-let isConfigured = false;
-
+/**
+ * Configure Monaco Editor with special settings for Minecraft modding
+ */
 export function configureMonaco() {
-  if (isConfigured) return;
-
-  // Register Java language
-  monaco.languages.register({ id: 'java' });
-
-  // Java syntax highlighting
-  monaco.languages.setMonarchTokensProvider('java', {
-    defaultToken: 'invalid',
-    tokenPostfix: '.java',
-
-    keywords: [
-      'abstract', 'continue', 'for', 'new', 'switch', 'assert', 'default', 
-      'goto', 'package', 'synchronized', 'boolean', 'do', 'if', 'private', 
-      'this', 'break', 'double', 'implements', 'protected', 'throw', 'byte', 
-      'else', 'import', 'public', 'throws', 'case', 'enum', 'instanceof', 
-      'return', 'transient', 'catch', 'extends', 'int', 'short', 'try', 
-      'char', 'final', 'interface', 'static', 'void', 'class', 'finally', 
-      'long', 'strictfp', 'volatile', 'const', 'float', 'native', 'super', 'while'
+  // Set dark theme
+  monaco.editor.defineTheme('minecraft-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: 'keyword', foreground: '#cc7832', fontStyle: 'bold' },
+      { token: 'comment', foreground: '#808080', fontStyle: 'italic' },
+      { token: 'string', foreground: '#6a8759' },
+      { token: 'number', foreground: '#6897bb' },
+      { token: 'type', foreground: '#afb42b' },
+      { token: 'annotation', foreground: '#bbb529' },
+      { token: 'field', foreground: '#9876aa' },
     ],
-
-    typeKeywords: [
-      'boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float'
-    ],
-
-    operators: [
-      '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
-      '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^', '%',
-      '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=', '^=',
-      '%=', '<<=', '>>=', '>>>='
-    ],
-
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
-    escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
-    digits: /\d+(_+\d+)*/,
-    octaldigits: /[0-7]+(_+[0-7]+)*/,
-    binarydigits: /[0-1]+(_+[0-1]+)*/,
-    hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
-
-    tokenizer: {
-      root: [
-        // Package and import statements
-        [/^(package)(\s+)/, ['keyword', { token: '', next: '@package' }]],
-        [/^(import)(\s+)/, ['keyword', { token: '', next: '@import' }]],
-
-        // Identifiers and keywords
-        [/[a-z_$][\w$]*/, {
-          cases: {
-            '@typeKeywords': 'type',
-            '@keywords': 'keyword',
-            '@default': 'identifier'
-          }
-        }],
-        [/[A-Z][\w$]*/, 'type.identifier'],
-
-        // Whitespace
-        { include: '@whitespace' },
-
-        // Delimiters and operators
-        [/[{}()\[\]]/, '@brackets'],
-        [/[<>](?!@symbols)/, '@brackets'],
-        [/@symbols/, {
-          cases: {
-            '@operators': 'operator',
-            '@default': ''
-          }
-        }],
-
-        // Numbers
-        [/(@digits)[eE]([\-+]?(@digits))?[fFdD]?/, 'number.float'],
-        [/(@digits)\.(@digits)([eE][\-+]?(@digits))?[fFdD]?/, 'number.float'],
-        [/0[xX](@hexdigits)[lL]?/, 'number.hex'],
-        [/0(@octaldigits)[lL]?/, 'number.octal'],
-        [/0[bB](@binarydigits)[lL]?/, 'number.binary'],
-        [/(@digits)[lL]?/, 'number'],
-
-        // Delimiter: after number because of .\d floats
-        [/[;,.]/, 'delimiter'],
-
-        // Strings
-        [/"([^"\\]|\\.)*$/, 'string.invalid'],
-        [/"/, 'string', '@string'],
-
-        // Characters
-        [/'[^\\']'/, 'string'],
-        [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-        [/'/, 'string.invalid']
-      ],
-
-      whitespace: [
-        [/[ \t\r\n]+/, ''],
-        [/\/\*\*(?!\/)/, 'comment.doc', '@javadoc'],
-        [/\/\*/, 'comment', '@comment'],
-        [/\/\/.*$/, 'comment']
-      ],
-
-      comment: [
-        [/[^\/*]+/, 'comment'],
-        [/\*\//, 'comment', '@pop'],
-        [/[\/*]/, 'comment']
-      ],
-
-      javadoc: [
-        [/[^\/*]+/, 'comment.doc'],
-        [/\*\//, 'comment.doc', '@pop'],
-        [/[\/*]/, 'comment.doc']
-      ],
-
-      string: [
-        [/[^\\"]+/, 'string'],
-        [/@escapes/, 'string.escape'],
-        [/\\./, 'string.escape.invalid'],
-        [/"/, 'string', '@pop']
-      ],
-
-      package: [
-        [/[A-Za-z]\w*/, 'package'],
-        [/\./, 'delimiter'],
-        [/;/, 'delimiter', '@pop'],
-      ],
-
-      import: [
-        [/[A-Za-z]\w*/, 'import'],
-        [/\./, 'delimiter'],
-        [/;/, 'delimiter', '@pop'],
-        [/\*/, 'import'],
-      ]
-    }
+    colors: {
+      'editor.background': '#1e1e1e',
+      'editor.foreground': '#d4d4d4',
+      'editorCursor.foreground': '#a5a5a5',
+      'editor.lineHighlightBackground': '#2f2f2f',
+      'editorLineNumber.foreground': '#5a5a5a',
+      'editor.selectionBackground': '#214283',
+      'editor.inactiveSelectionBackground': '#3a3d41',
+    },
   });
 
-  // Code completion
+  // Set theme as default
+  monaco.editor.setTheme('minecraft-dark');
+
+  // Add Minecraft-specific code completion providers
+  addNeoForgeCompletions();
+}
+
+/**
+ * Add code completion suggestions for NeoForge 1.21.5
+ */
+function addNeoForgeCompletions() {
+  // Java language provider
   monaco.languages.registerCompletionItemProvider('java', {
-    provideCompletionItems: () => {
-      const suggestions = [
-        {
-          label: 'public',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'public'
-        },
-        {
-          label: 'private',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'private'
-        },
-        {
-          label: 'class',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'class'
-        },
-        {
-          label: 'interface',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'interface'
-        },
-        {
-          label: 'extends',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'extends'
-        },
-        {
-          label: 'implements',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'implements'
-        },
-        {
-          label: 'return',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'return'
-        },
-        {
-          label: 'void',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'void'
-        },
-        {
-          label: 'static',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'static'
-        },
-        {
-          label: 'import',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'import'
-        },
-        {
-          label: 'package',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'package'
-        },
-        {
-          label: 'final',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'final'
-        },
-        {
-          label: 'boolean',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'boolean'
-        },
-        {
-          label: 'int',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'int'
-        },
-        {
-          label: 'float',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'float'
-        },
-        {
-          label: 'double',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'double'
-        },
-        {
-          label: 'String',
-          kind: monaco.languages.CompletionItemKind.Class,
-          insertText: 'String'
-        },
-        // NeoForge specific suggestions
-        {
-          label: 'DeferredRegister',
-          kind: monaco.languages.CompletionItemKind.Class,
-          insertText: 'DeferredRegister'
-        },
-        {
-          label: 'RegistryObject',
-          kind: monaco.languages.CompletionItemKind.Class,
-          insertText: 'RegistryObject'
-        },
-        {
-          label: 'DataComponent',
-          kind: monaco.languages.CompletionItemKind.Class,
-          insertText: 'DataComponent'
-        },
-        {
-          label: 'RegisterEvent',
-          kind: monaco.languages.CompletionItemKind.Class,
-          insertText: 'RegisterEvent'
-        },
-        {
-          label: 'FMLClientSetupEvent',
-          kind: monaco.languages.CompletionItemKind.Class,
-          insertText: 'FMLClientSetupEvent'
-        },
-        {
-          label: 'sout',
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'System.out.println(${1:message});',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-        },
-        {
-          label: 'psvm',
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'public static void main(String[] args) {\n\t${1}\n}',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-        },
-        {
-          label: 'for',
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'for (int ${1:i} = 0; ${1:i} < ${2:length}; ${1:i}++) {\n\t${3}\n}',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-        },
-        {
-          label: 'if',
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: 'if (${1:condition}) {\n\t${2}\n}',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-        }
-      ];
-      
-      return { suggestions };
-    }
-  });
+    triggerCharacters: ['.', '@'],
+    provideCompletionItems: (model, position) => {
+      const textUntilPosition = model.getValueInRange({
+        startLineNumber: position.lineNumber,
+        startColumn: 1,
+        endLineNumber: position.lineNumber,
+        endColumn: position.column,
+      });
 
-  isConfigured = true;
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+
+      const suggestions: monaco.languages.CompletionItem[] = [];
+
+      // Minecraft/NeoForge imports
+      if (textUntilPosition.trim().startsWith('import') || textUntilPosition.includes('import net.')) {
+        suggestions.push(
+          {
+            label: 'net.minecraft.core.component.DataComponents',
+            kind: monaco.languages.CompletionItemKind.Reference,
+            insertText: 'net.minecraft.core.component.DataComponents',
+            range,
+          },
+          {
+            label: 'net.minecraft.world.item.Item',
+            kind: monaco.languages.CompletionItemKind.Reference,
+            insertText: 'net.minecraft.world.item.Item',
+            range,
+          },
+          {
+            label: 'net.minecraft.world.item.component.Weapon',
+            kind: monaco.languages.CompletionItemKind.Reference,
+            insertText: 'net.minecraft.world.item.component.Weapon',
+            range,
+          },
+          {
+            label: 'net.neoforged.neoforge.registries.DeferredRegister',
+            kind: monaco.languages.CompletionItemKind.Reference,
+            insertText: 'net.neoforged.neoforge.registries.DeferredRegister',
+            range,
+          },
+          {
+            label: 'net.neoforged.neoforge.registries.RegistryObject',
+            kind: monaco.languages.CompletionItemKind.Reference,
+            insertText: 'net.neoforged.neoforge.registries.RegistryObject',
+            range,
+          }
+        );
+      }
+
+      // DataComponents for item properties
+      if (textUntilPosition.includes('DataComponents.')) {
+        suggestions.push(
+          {
+            label: 'WEAPON',
+            kind: monaco.languages.CompletionItemKind.Field,
+            insertText: 'WEAPON',
+            detail: 'DataComponents.WEAPON - For weapon items',
+            range,
+          },
+          {
+            label: 'TOOL',
+            kind: monaco.languages.CompletionItemKind.Field,
+            insertText: 'TOOL',
+            detail: 'DataComponents.TOOL - For tool items',
+            range,
+          },
+          {
+            label: 'ARMOR',
+            kind: monaco.languages.CompletionItemKind.Field,
+            insertText: 'ARMOR',
+            detail: 'DataComponents.ARMOR - For armor items',
+            range,
+          },
+          {
+            label: 'BLOCKS_ATTACKS',
+            kind: monaco.languages.CompletionItemKind.Field,
+            insertText: 'BLOCKS_ATTACKS',
+            detail: 'DataComponents.BLOCKS_ATTACKS - For shields',
+            range,
+          }
+        );
+      }
+
+      // Item properties builder methods
+      if (textUntilPosition.includes('new Item.Properties()') || textUntilPosition.includes('Properties().')) {
+        suggestions.push(
+          {
+            label: 'sword',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'sword()',
+            detail: 'Configures this item as a sword',
+            range,
+          },
+          {
+            label: 'axe',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'axe()',
+            detail: 'Configures this item as an axe',
+            range,
+          },
+          {
+            label: 'pickaxe',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'pickaxe()',
+            detail: 'Configures this item as a pickaxe',
+            range,
+          },
+          {
+            label: 'shovel',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'shovel()',
+            detail: 'Configures this item as a shovel',
+            range,
+          },
+          {
+            label: 'hoe',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'hoe()',
+            detail: 'Configures this item as a hoe',
+            range,
+          },
+          {
+            label: 'durability',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'durability(${1:1000})',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            detail: 'Sets item durability',
+            range,
+          },
+          {
+            label: 'stacksTo',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'stacksTo(${1:64})',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            detail: 'Sets item stack size',
+            range,
+          },
+          {
+            label: 'add',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'add(${1:DataComponents}, ${2:component})',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            detail: 'Adds a data component to the item',
+            range,
+          }
+        );
+      }
+
+      // Block properties
+      if (textUntilPosition.includes('BlockBehaviour.Properties') || textUntilPosition.includes('Properties.')) {
+        suggestions.push(
+          {
+            label: 'of',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'of(${1:BlockSetType})',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            detail: 'Creates new block properties',
+            range,
+          },
+          {
+            label: 'strength',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'strength(${1:1.5f}, ${2:6.0f})',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            detail: 'Sets hardness and resistance',
+            range,
+          },
+          {
+            label: 'requiresCorrectToolForDrops',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'requiresCorrectToolForDrops()',
+            detail: 'Makes block require the correct tool',
+            range,
+          },
+          {
+            label: 'sound',
+            kind: monaco.languages.CompletionItemKind.Method,
+            insertText: 'sound(${1:SoundType})',
+            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            detail: 'Sets the block sound',
+            range,
+          }
+        );
+      }
+
+      return {
+        suggestions,
+      };
+    },
+  });
 }
