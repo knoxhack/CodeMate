@@ -71,6 +71,7 @@ export default function ProjectEditor() {
   const [featureModalOpen, setFeatureModalOpen] = useState<string | null>(null);
   const [fileManagerOpen, setFileManagerOpen] = useState(false);
   const [showFileExplorer, setShowFileExplorer] = useState(false);
+  const [projectStructure, setProjectStructure] = useState<(ProjectFile | ProjectFolder)[]>([]);
 
   // Query project data
   const {
@@ -142,10 +143,24 @@ export default function ProjectEditor() {
     };
   }, [unsavedChanges]);
 
-  // Select first file when files are loaded
+  // Select first file when files are loaded and convert files to project structure
   useEffect(() => {
-    if (files.length > 0 && !selectedFile) {
-      setSelectedFile(files[0]);
+    if (files.length > 0) {
+      // Select first file if none is selected
+      if (!selectedFile) {
+        setSelectedFile(files[0]);
+      }
+      
+      // Convert database files to ProjectFile format for the CodeEditor
+      const projectFiles: ProjectFile[] = files.map(file => ({
+        name: file.name,
+        path: file.path,
+        type: 'file',
+        content: file.content
+      }));
+      
+      // Set project structure with flat file list
+      setProjectStructure(projectFiles);
     }
   }, [files, selectedFile]);
 
@@ -506,6 +521,7 @@ export default function ProjectEditor() {
                         handleSelectFile(dbFile);
                       }
                     }}
+                    projectStructure={projectStructure}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full">

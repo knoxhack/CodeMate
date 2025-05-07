@@ -8,7 +8,7 @@ import { configureMonaco } from "@/lib/monaco-config";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Maximize2, Minimize2, File, FileText, Settings, Search, X } from "lucide-react";
 import { useAppContext } from "@/context/AppContext";
-import { ProjectFile } from "@/types/project";
+import { ProjectFile, ProjectFolder } from "@/types/project";
 
 // Initialize Monaco configuration
 configureMonaco();
@@ -21,6 +21,7 @@ interface CodeEditorProps {
   onSave?: (content: string) => void;
   isReadOnly?: boolean;
   onFileSelect?: (file: ProjectFile) => void;
+  projectStructure?: (ProjectFile | ProjectFolder)[];
 }
 
 interface CodeSuggestion {
@@ -40,6 +41,7 @@ export default function CodeEditor({
   onSave,
   isReadOnly = false,
   onFileSelect,
+  projectStructure: files = []
 }: CodeEditorProps) {
   const [editor, setEditor] = useState<editor.IStandaloneCodeEditor | null>(null);
   const [content, setContent] = useState(initialContent);
@@ -49,7 +51,7 @@ export default function CodeEditor({
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const { toast } = useToast();
-  const { projectStructure, selectFile } = useAppContext();
+  const { selectFile } = useAppContext();
 
   // Editor initialization
   useEffect(() => {
@@ -227,7 +229,7 @@ export default function CodeEditor({
   
   // Filter files based on search query
   const getFilteredFiles = (): ProjectFile[] => {
-    const allFiles = getAllFiles(projectStructure);
+    const allFiles = getAllFiles(files);
     
     if (!searchQuery) {
       return allFiles;
