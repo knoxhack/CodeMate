@@ -3,9 +3,10 @@ import * as monaco from "monaco-editor";
 import { editor } from "monaco-editor";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { configureMonaco } from "@/lib/monaco-config";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Maximize2, Minimize2, File, FileText, Settings, Search } from "lucide-react";
+import { Check, Maximize2, Minimize2, File, FileText, Settings, Search, X } from "lucide-react";
 import { useAppContext } from "@/context/AppContext";
 import { ProjectFile } from "@/types/project";
 
@@ -43,6 +44,8 @@ export default function CodeEditor({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [suggestions, setSuggestions] = useState<CodeSuggestion[]>([]);
   const [openFilesMenu, setOpenFilesMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const { toast } = useToast();
   const { projectStructure, selectFile } = useAppContext();
 
@@ -183,6 +186,58 @@ export default function CodeEditor({
     setSuggestions(suggestions.filter(s => s !== suggestion));
   };
 
+  // Function to get file extension
+  const getFileExtension = (filename: string): string => {
+    return filename.split('.').pop()?.toLowerCase() || "";
+  };
+
+  // Function to get appropriate file icon based on extension
+  const getFileIcon = (filename: string) => {
+    const ext = getFileExtension(filename);
+    
+    // Map extensions to appropriate icons
+    if (['java', 'js', 'ts', 'jsx', 'tsx', 'py', 'c', 'cpp', 'cs'].includes(ext)) {
+      return <FileText className="h-4 w-4 mr-1" />;
+    } else if (['json', 'xml', 'yml', 'yaml', 'toml', 'md', 'txt'].includes(ext)) {
+      return <File className="h-4 w-4 mr-1" />;
+    } else {
+      return <File className="h-4 w-4 mr-1" />;
+    }
+  };
+
+  // Function to get all files from project structure recursively
+  const getAllFiles = (structure: any[]): ProjectFile[] => {
+    let files: ProjectFile[] = [];
+    
+    const traverse = (items: any[]) => {
+      for (const item of items) {
+        if (item.type === 'file') {
+          files.push(item as ProjectFile);
+        } else if (item.type === 'folder' && item.children) {
+          traverse(item.children);
+        }
+      }
+    };
+    
+    traverse(structure);
+    return files;
+  };
+  
+  // Filter files based on search query
+  const getFilteredFiles = (): ProjectFile[] => {
+    const allFiles = getAllFiles(projectStructure);
+    
+    if (!searchQuery) {
+      return allFiles;
+    }
+    
+    const query = searchQuery.toLowerCase();
+    return allFiles.filter(file => 
+      file.name.toLowerCase().includes(query) || 
+      file.path.toLowerCase().includes(query)
+    );
+  };
+
   // Listen for code suggestions from Claude via an event listener
   useEffect(() => {
     const handleCodeSuggestion = (e: Event) => {
@@ -206,7 +261,17 @@ export default function CodeEditor({
       className={`flex flex-col ${isFullscreen ? "fixed inset-0 z-50 bg-gray-900" : "h-full"}`}
     >
       <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700">
-        <div className="text-sm font-mono text-gray-300">{fileName}</div>
+        <div className="flex items-center">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setOpenFilesMenu(!openFilesMenu)}
+            className="h-8 text-xs text-gray-300 flex items-center mr-2 hover:bg-gray-700"
+          >
+            <File className="h-4 w-4 mr-1" /> Open Files
+          </Button>
+          <div className="text-sm font-mono text-gray-300">{fileName}</div>
+        </div>
         <div className="flex gap-2">
           {!isReadOnly && (
             <Button 
@@ -228,6 +293,68 @@ export default function CodeEditor({
           </Button>
         </div>
       </div>
+      
+      {/* File manager icon bar */}
+      {openFilesMenu && (
+        <div className="bg-gray-800 border-b border-gray-700">
+          {/* Search bar */}
+          <div className="flex items-center p-1 border-b border-gray-700">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowSearch(!showSearch)}
+              className="h-8 w-8 mr-1 flex items-center justify-center"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+            
+            {showSearch && (
+              <div className="flex-1 flex items-center">
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search files..."
+                  className="h-8 text-sm bg-gray-900 border-gray-700"
+                />
+                {searchQuery && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSearchQuery("")}
+                    className="h-8 w-8 ml-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+          
+          {/* File buttons */}
+          <div className="flex flex-wrap p-1 gap-1 overflow-x-auto">
+            {getFilteredFiles().map((file, index) => (
+              <Button
+                key={index}
+                variant="ghost"
+                size="sm"
+                onClick={() => selectFile(file)}
+                className={`h-8 text-xs flex items-center whitespace-nowrap 
+                  ${fileId === file.path ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700'}`}
+              >
+                {getFileIcon(file.name)}
+                <span className="truncate max-w-[120px] md:max-w-[150px]">{file.name}</span>
+              </Button>
+            ))}
+            
+            {getFilteredFiles().length === 0 && (
+              <div className="text-xs text-gray-400 py-1 px-2">
+                No files match your search
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       
       <div className="relative flex-1">
         <div 
