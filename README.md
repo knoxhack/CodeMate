@@ -152,12 +152,6 @@ SESSION_SECRET=your-secure-session-secret
 ANTHROPIC_API_KEY=your-claude-api-key
 ```
 
-## Admin Access
-
-For administrative access, use:
-- Username: admin
-- Password: mimohola
-
 ## Licensing and Credits
 
 - Developed for NeoForge modding community
