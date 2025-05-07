@@ -1,0 +1,93 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build
+        env:
+          # Add any environment variables needed for build
+          # Use secrets in GitHub repository settings
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://api.codemate.example.com' }}
+          VITE_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          
+      - name: Setup GitHub Pages support
+        run: node github-pages-deploy.js
+          
+      - name: Modify index.html for SPA routing
+        run: |
+          INDEX_FILE="./dist/public/index.html"
+          if [[ -f "$INDEX_FILE" ]]; then
+            # Insert SPA redirect script after <head> tag
+            REDIRECT_SCRIPT='<!-- Start Single Page Apps for GitHub Pages -->
+            <script>
+              (function(l) {
+                if (l.search[1] === "/") {
+                  var decoded = l.search.slice(1).split("&").map(function(s) { 
+                    return s.replace(/~and~/g, "&")
+                  }).join("?");
+                  window.history.replaceState(null, null,
+                    l.pathname.slice(0, -1) + decoded + l.hash
+                  );
+                }
+              }(window.location))
+            </script>
+            <!-- End Single Page Apps for GitHub Pages -->'
+            sed -i "s|<head>|<head>\n$REDIRECT_SCRIPT|" "$INDEX_FILE"
+            echo "Added SPA redirect script to index.html"
+          else
+            echo "Warning: Could not find index.html at $INDEX_FILE"
+          fi
+          
+      - name: Copy 404.html and .nojekyll to output directory
+        run: |
+          cp ./dist/404.html ./dist/public/ || echo "404.html not found"
+          touch ./dist/public/.nojekyll
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: './dist/public'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
