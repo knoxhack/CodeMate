@@ -22,6 +22,8 @@ import {
   FolderOpen, FileText, ChevronRight, ChevronDown, File
 } from "lucide-react";
 import SimpleClaudeAssistant from "@/components/SimpleClaudeAssistant";
+import CodeEditor from "@/components/CodeEditor";
+import { ProjectFile, ProjectFolder } from "@/types/project";
 
 // Import specialized features
 import IntelligentCodeCompletion from "@/components/features/IntelligentCodeCompletion";
@@ -486,7 +488,25 @@ export default function ProjectEditor() {
             <TabsContent value="code-editor" className="flex-grow pt-0 mt-0">
               <div className="h-full flex flex-col">
                 {selectedFile ? (
-                  <div id="monaco-editor-container" className="h-[40vh] md:h-[50vh] w-full" />
+                  <CodeEditor
+                    initialContent={selectedFile.content}
+                    language={getLanguageFromFilename(selectedFile.name)}
+                    fileId={selectedFile.path}
+                    fileName={selectedFile.name}
+                    onSave={(content) => {
+                      saveFileMutation.mutate({
+                        id: selectedFile.id,
+                        content: content,
+                      });
+                    }}
+                    onFileSelect={(file) => {
+                      // Find the matching file from our files array
+                      const dbFile = files.find(f => f.path === file.path);
+                      if (dbFile) {
+                        handleSelectFile(dbFile);
+                      }
+                    }}
+                  />
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
