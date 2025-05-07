@@ -1,6 +1,106 @@
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Build outputs
 dist
-.DS_Store
+build
 server/public
+server/static
+client/dist
+client/build
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local
+*.key
+*.pem
+*.cert
+.credentials
+secrets/
+config/local.*
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+*db-journal
+/data/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor specific
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/
+*.code-workspace
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Misc
+.cache
+.temp
+.tmp
+.eslintcache
 vite.config.ts.*
 *.tar.gz
+coverage/
+.nyc_output
+.turbo
+.vercel
+.netlify
+cache/
+
+# Temporary script files
+hash-password.js
+temp-*.js
+*.bak
+*.backup
+*~
+
+# Large media files
+*.mp4
+*.mov
+*.wmv
+*.avi
+*.zip
+*.rar
+*.7z
+*.gz
+*.iso
+*.tar
