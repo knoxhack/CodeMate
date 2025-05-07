@@ -20,6 +20,7 @@ interface CodeEditorProps {
   fileName?: string;
   onSave?: (content: string) => void;
   isReadOnly?: boolean;
+  onFileSelect?: (file: ProjectFile) => void;
 }
 
 interface CodeSuggestion {
@@ -38,6 +39,7 @@ export default function CodeEditor({
   fileName = "Untitled.java",
   onSave,
   isReadOnly = false,
+  onFileSelect,
 }: CodeEditorProps) {
   const [editor, setEditor] = useState<editor.IStandaloneCodeEditor | null>(null);
   const [content, setContent] = useState(initialContent);
@@ -338,7 +340,14 @@ export default function CodeEditor({
                 key={index}
                 variant="ghost"
                 size="sm"
-                onClick={() => selectFile(file)}
+                onClick={() => {
+                  // Use the callback if provided, otherwise use the context function
+                  if (onFileSelect) {
+                    onFileSelect(file);
+                  } else {
+                    selectFile(file);
+                  }
+                }}
                 className={`h-8 text-xs flex items-center whitespace-nowrap 
                   ${fileId === file.path ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700'}`}
               >
