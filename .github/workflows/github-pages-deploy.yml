@@ -38,11 +38,41 @@ jobs:
           VITE_API_URL: ${{ vars.VITE_API_URL || 'https://api.codemate.example.com' }}
           VITE_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           
-      - name: Setup GitHub Pages support
-        run: node github-pages-deploy.js
-          
-      - name: Modify index.html for SPA routing
+      # Create GitHub Pages required files manually (instead of using the script)
+      - name: Create GitHub Pages files
         run: |
+          # Create 404.html
+          cat > ./dist/public/404.html << 'EOL'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>CodeMate - Redirecting</title>
+              <script>
+                // Single Page Apps for GitHub Pages
+                // This script takes the current url and converts the path and query
+                // string into just a query string, and then redirects the browser
+                var pathSegmentsToKeep = 1;
+                var l = window.location;
+                l.replace(
+                  l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+                  l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+                  l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+                  (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+                  l.hash
+                );
+              </script>
+            </head>
+            <body>
+              Redirecting...
+            </body>
+          </html>
+          EOL
+          
+          # Create .nojekyll file
+          touch ./dist/public/.nojekyll
+          
+          # Modify index.html for SPA routing
           INDEX_FILE="./dist/public/index.html"
           if [[ -f "$INDEX_FILE" ]]; then
             # Insert SPA redirect script after <head> tag
@@ -60,22 +90,19 @@ jobs:
               }(window.location))
             </script>
             <!-- End Single Page Apps for GitHub Pages -->'
+            
+            # Use sed to insert the script after the <head> tag
             sed -i "s|<head>|<head>\n$REDIRECT_SCRIPT|" "$INDEX_FILE"
             echo "Added SPA redirect script to index.html"
           else
             echo "Warning: Could not find index.html at $INDEX_FILE"
           fi
           
-      - name: Copy 404.html and .nojekyll to output directory
-        run: |
-          cp ./dist/404.html ./dist/public/ || echo "404.html not found"
-          touch ./dist/public/.nojekyll
-          
       - name: Setup Pages
         uses: actions/configure-pages@v3
         
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: './dist/public'
 

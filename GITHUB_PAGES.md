@@ -48,8 +48,10 @@ This project includes an automated GitHub Actions workflow that handles the depl
 The deployment is configured in the `.github/workflows/github-pages-deploy.yml` file. Key features:
 
 - Builds the application using Vite
-- Sets up Single Page Application (SPA) routing for GitHub Pages
-- Creates necessary files for GitHub Pages to work with React Router
+- Automatically creates SPA routing support files:
+  - A 404.html page for handling client-side routing
+  - Adds SPA routing script to index.html
+  - Creates a .nojekyll file to disable GitHub's Jekyll processing
 - Deploys the built files to GitHub Pages
 
 ## SPA Routing on GitHub Pages
