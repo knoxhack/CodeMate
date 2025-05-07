@@ -5,7 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { configureMonaco } from "@/lib/monaco-config";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Maximize2, Minimize2 } from "lucide-react";
+import { Check, Maximize2, Minimize2, File, FileText, Settings, Search } from "lucide-react";
+import { useAppContext } from "@/context/AppContext";
+import { ProjectFile } from "@/types/project";
 
 // Initialize Monaco configuration
 configureMonaco();
@@ -40,7 +42,9 @@ export default function CodeEditor({
   const [content, setContent] = useState(initialContent);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [suggestions, setSuggestions] = useState<CodeSuggestion[]>([]);
+  const [openFilesMenu, setOpenFilesMenu] = useState(false);
   const { toast } = useToast();
+  const { projectStructure, selectFile } = useAppContext();
 
   // Editor initialization
   useEffect(() => {
