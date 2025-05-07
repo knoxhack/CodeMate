@@ -298,9 +298,9 @@ export default function CodeEditor({
         </div>
       </div>
       
-      {/* File manager icon bar */}
+      {/* File manager icon bar - moved to a dropdown to prevent overlapping */}
       {openFilesMenu && (
-        <div className="bg-gray-800 border-b border-gray-700">
+        <div className="absolute top-10 left-0 z-30 w-64 bg-gray-800 border border-gray-700 shadow-lg rounded-md">
           {/* Search bar */}
           <div className="flex items-center p-1 border-b border-gray-700">
             <Button
@@ -336,33 +336,37 @@ export default function CodeEditor({
           </div>
           
           {/* File buttons */}
-          <div className="flex flex-wrap p-1 gap-1 overflow-x-auto">
-            {getFilteredFiles().map((file, index) => (
-              <Button
-                key={index}
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  // Use the callback if provided, otherwise use the context function
-                  if (onFileSelect) {
-                    onFileSelect(file);
-                  } else {
-                    selectFile(file);
-                  }
-                }}
-                className={`h-8 text-xs flex items-center whitespace-nowrap 
-                  ${fileId === file.path ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700'}`}
-              >
-                {getFileIcon(file.name)}
-                <span className="truncate max-w-[120px] md:max-w-[150px]">{file.name}</span>
-              </Button>
-            ))}
-            
-            {getFilteredFiles().length === 0 && (
-              <div className="text-xs text-gray-400 py-1 px-2">
-                No files match your search
-              </div>
-            )}
+          <div className="max-h-60 overflow-y-auto p-1">
+            <div className="flex flex-col gap-1">
+              {getFilteredFiles().map((file, index) => (
+                <Button
+                  key={index}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    // Use the callback if provided, otherwise use the context function
+                    if (onFileSelect) {
+                      onFileSelect(file);
+                    } else {
+                      selectFile(file);
+                    }
+                    // Close the file menu after selection
+                    setOpenFilesMenu(false);
+                  }}
+                  className={`h-8 justify-start text-xs flex items-center whitespace-nowrap 
+                    ${fileId === file.path ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-700'}`}
+                >
+                  {getFileIcon(file.name)}
+                  <span className="truncate">{file.name}</span>
+                </Button>
+              ))}
+              
+              {getFilteredFiles().length === 0 && (
+                <div className="text-xs text-gray-400 py-1 px-2">
+                  No files match your search
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

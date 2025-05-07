@@ -426,51 +426,7 @@ export default function ProjectEditor() {
 
       {/* Main content - Mobile First Layout */}
       <div className="flex-grow flex flex-col relative">
-        {/* File Explorer Button (always visible) */}
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="absolute top-2 left-2 z-10 bg-gray-800/70"
-          onClick={toggleFileExplorer}
-        >
-          {showFileExplorer ? <X className="h-4 w-4 mr-2" /> : <File className="h-4 w-4 mr-2" />}
-          <span>{showFileExplorer ? "Close Files" : "Open Files"}</span>
-        </Button>
-
-        {/* File Explorer (toggle visibility) */}
-        {showFileExplorer && (
-          <div className="absolute top-12 left-2 z-10 bg-gray-900/90 border border-gray-700 rounded-md shadow-lg p-3 w-[280px] max-h-[60vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm font-medium text-gray-300 flex items-center">
-                <FolderOpen className="h-4 w-4 mr-2 text-blue-400" />
-                Project Files
-              </h3>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <Search className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-            
-            <div className="space-y-1 mt-2">
-              {files.map((file) => (
-                <div
-                  key={file.id}
-                  className={`px-2 py-1.5 rounded text-sm cursor-pointer flex items-center ${
-                    selectedFile?.id === file.id
-                      ? "bg-blue-900/30 text-blue-300"
-                      : "hover:bg-gray-800 text-gray-300 hover:text-white"
-                  }`}
-                  onClick={() => {
-                    handleSelectFile(file);
-                    // Don't close the file explorer when selecting a file
-                  }}
-                >
-                  <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{file.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Removed standalone file explorer button since CodeEditor has its own file manager */}
         
         {/* Main editor area */}
         <div className="flex-grow flex flex-col">
