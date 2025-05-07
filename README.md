@@ -147,9 +147,9 @@ A cutting-edge Minecraft mod development platform that leverages advanced AI cap
 ## Environment Variables
 
 ```
-DATABASE_URL=postgresql://username:password@host:port/database
+DATABASE_URL=your-database-connection-string
 SESSION_SECRET=your-secure-session-secret
-ANTHROPIC_API_KEY=your-claude-api-key
+ANTHROPIC_API_KEY=your-api-key
 ```
 
 ## Licensing and Credits
