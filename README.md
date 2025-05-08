@@ -1,6 +1,30 @@
+```
+  _____          _      __  __       _       
+ / ____|        | |    |  \/  |     | |      
+| |     ___   __| | ___| \  / | __ _| |_ ___ 
+| |    / _ \ / _` |/ _ \ |\/| |/ _` | __/ _ \
+| |___| (_) | (_| |  __/ |  | | (_| | ||  __/
+ \_____\___/ \__,_|\___|_|  |_|\__,_|\__\___|
+                                              
+```
+
 # CodeMate - Minecraft Mod Development Platform
 
+![GitHub last commit](https://img.shields.io/github/last-commit/codemate/minecraft-modding-platform)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/codemate/minecraft-modding-platform/github-pages-deploy.yml)
+![GitHub](https://img.shields.io/github/license/codemate/minecraft-modding-platform)
+![NeoForge Version](https://img.shields.io/badge/NeoForge-1.21.5-orange)
+![Claude AI](https://img.shields.io/badge/AI-Claude--3--7--Sonnet-8A2BE2)
+
 A cutting-edge Minecraft mod development platform that leverages advanced AI capabilities to transform the modding experience for NeoForge 1.21.5, with enhanced AI interaction tools and template-based project creation.
+
+<div align="center">
+  <p>
+    <img src="generated-icon.png" alt="CodeMate Logo" width="200" height="200">
+  </p>
+  <h3>Revolutionizing Minecraft Mod Development with AI</h3>
+  <a href="https://codemate.github.io/minecraft-modding-platform">View Demo</a>
+</div>
 
 ## Core Features
 
@@ -138,11 +162,27 @@ A cutting-edge Minecraft mod development platform that leverages advanced AI cap
 
 ## Getting Started
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Wiki-/Minecraft-Bedrock-Wireframe/master/minecraftDivider.png" alt="Minecraft Divider" width="600">
+</div>
+
 1. Clone the repository
 2. Install dependencies with `npm install`
 3. Set up environment variables (see `.env.example`)
 4. Start the development server with `npm run dev`
 5. Navigate to the provided URL to access the application
+
+## Deployment
+
+### GitHub Pages Deployment
+
+CodeMate can be deployed to GitHub Pages for easy access. We've included a fully automated GitHub Actions workflow.
+
+1. Push your code to GitHub
+2. Enable GitHub Pages in your repository settings
+3. The GitHub Action will handle the build and deployment automatically
+
+For more details, see [GITHUB_PAGES.md](GITHUB_PAGES.md)
 
 ## Environment Variables
 
@@ -158,6 +198,12 @@ ANTHROPIC_API_KEY=your-api-key
 - Minecraft is a registered trademark of Mojang Studios
 - Claude AI integration powered by Anthropic
 
----
-
-© 2025 CodeMate Development Team
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Wiki-/Minecraft-Bedrock-Wireframe/master/minecraftFooter.png" alt="Minecraft Footer" width="600">
+  <br>
+  <a href="https://github.com/codemate/minecraft-modding-platform/issues">Report Bug</a>
+  ·
+  <a href="https://github.com/codemate/minecraft-modding-platform/issues">Request Feature</a>
+  <br><br>
+  © 2025 CodeMate Development Team
+</div>
