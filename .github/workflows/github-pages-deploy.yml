@@ -6,9 +6,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write  # Needed for some deployment tasks
+  pages: write     # Needed for GitHub Pages deployment
+  id-token: write  # Needed for requesting the OIDC JWT
+  actions: write   # Needed for workflow management
 
 concurrency:
   group: "pages"
@@ -109,6 +110,8 @@ jobs:
           
       - name: Setup Pages
         uses: actions/configure-pages@v3
+        with:
+          enablement: true # Enable GitHub Pages for this repository
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

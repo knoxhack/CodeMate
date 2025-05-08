@@ -20,11 +20,15 @@ This project includes an automated GitHub Actions workflow that handles the depl
    
    Create a repository on GitHub and push your CodeMate project to it.
 
-2. **Set up GitHub Pages**
+2. **GitHub Pages Setup**
+   
+   The workflow will automatically enable GitHub Pages for your repository. However, if you prefer to set it up manually:
    
    - Go to your repository settings on GitHub
    - Navigate to the "Pages" section
    - Under "Source", select "GitHub Actions"
+   
+   Note: Our workflow includes automatic enablement of GitHub Pages, so this step is optional.
 
 3. **Configure Environment Variables (optional)**
    
@@ -78,9 +82,32 @@ To use a custom domain with your GitHub Pages deployment:
 
 If you encounter issues with the deployment:
 
-1. Check the workflow run logs in the "Actions" tab
-2. Verify all required environment variables are set
-3. Ensure your repository has GitHub Pages enabled
-4. Check that the build process completes successfully
+1. **Check workflow permissions**:
+   - Go to repository Settings → Actions → General
+   - Scroll down to "Workflow permissions"
+   - Ensure "Read and write permissions" is selected
+
+2. **Verify GitHub Pages settings**:
+   - Go to repository Settings → Pages
+   - Check that the source is set to "GitHub Actions"
+   - If you see a message about GitHub Pages not being enabled, wait for the workflow to run as it will automatically enable it
+
+3. **Review workflow logs**:
+   - Go to the "Actions" tab and click on the failed workflow run
+   - Expand the steps to see detailed error messages
+   - Common errors include:
+     - Missing environment variables
+     - Build failures
+     - Permission issues
+
+4. **Common issues and solutions**:
+   - If you see "Get Pages site failed" error: This is often due to GitHub Pages not being enabled yet. The workflow should automatically fix this on the next run.
+   - If build fails: Check that all required dependencies are installed and environment variables are set.
+   - If deployment fails but build succeeds: Check repository permissions for GitHub Actions.
+
+5. **Manual troubleshooting**:
+   - Try running `npm run build` locally to verify the build process works
+   - Check that the output directory structure matches what's expected in the workflow
+   - Verify that your React routes are properly configured for GitHub Pages
 
 For more information, refer to [GitHub Pages documentation](https://docs.github.com/en/pages).
