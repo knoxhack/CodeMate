@@ -20,15 +20,22 @@ This project includes an automated GitHub Actions workflow that handles the depl
    
    Create a repository on GitHub and push your CodeMate project to it.
 
-2. **GitHub Pages Setup**
+2. **GitHub Pages Automatic Setup**
    
-   The workflow will automatically enable GitHub Pages for your repository. However, if you prefer to set it up manually:
+   The workflow will automatically:
    
-   - Go to your repository settings on GitHub
-   - Navigate to the "Pages" section
-   - Under "Source", select "GitHub Actions"
+   - Create a gh-pages branch in your repository
+   - Push built files to this branch
+   - Configure GitHub Pages to serve from this branch
    
-   Note: Our workflow includes automatic enablement of GitHub Pages, so this step is optional.
+   After the first successful workflow run, you'll need to:
+   
+   - Go to repository Settings → Pages
+   - Under "Source", select "Deploy from a branch"
+   - In the Branch dropdown, select "gh-pages" and "/ (root)"
+   - Click "Save"
+   
+   This only needs to be done once after the first deployment.
 
 3. **Configure Environment Variables (optional)**
    
@@ -56,7 +63,8 @@ The deployment is configured in the `.github/workflows/github-pages-deploy.yml` 
   - A 404.html page for handling client-side routing
   - Adds SPA routing script to index.html
   - Creates a .nojekyll file to disable GitHub's Jekyll processing
-- Deploys the built files to GitHub Pages
+- Deploys the built files to the gh-pages branch using JamesIves/github-pages-deploy-action
+- Requires no manual setup of GitHub Pages - just push to main branch
 
 ## SPA Routing on GitHub Pages
 
@@ -89,8 +97,9 @@ If you encounter issues with the deployment:
 
 2. **Verify GitHub Pages settings**:
    - Go to repository Settings → Pages
-   - Check that the source is set to "GitHub Actions"
-   - If you see a message about GitHub Pages not being enabled, wait for the workflow to run as it will automatically enable it
+   - Check that the source is set to "Deploy from a branch"
+   - Verify that "gh-pages" branch is selected as the source branch
+   - If the gh-pages branch doesn't exist yet, run the workflow first
 
 3. **Review workflow logs**:
    - Go to the "Actions" tab and click on the failed workflow run
@@ -101,9 +110,9 @@ If you encounter issues with the deployment:
      - Permission issues
 
 4. **Common issues and solutions**:
-   - If you see "Get Pages site failed" error: This is often due to GitHub Pages not being enabled yet. The workflow should automatically fix this on the next run.
+   - If you get a "Resource not accessible by integration" error: Make sure your workflow permissions are set correctly to "Read and write permissions" in repository Settings → Actions → General.
    - If build fails: Check that all required dependencies are installed and environment variables are set.
-   - If deployment fails but build succeeds: Check repository permissions for GitHub Actions.
+   - If the gh-pages branch is created but GitHub Pages is not working: Make sure to manually set up GitHub Pages to deploy from the gh-pages branch in repository Settings → Pages.
 
 5. **Manual troubleshooting**:
    - Try running `npm run build` locally to verify the build process works
