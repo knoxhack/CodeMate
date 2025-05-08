@@ -41,6 +41,9 @@ jobs:
       # Create GitHub Pages required files manually (instead of using the script)
       - name: Create GitHub Pages files
         run: |
+          # Create dist directory if it doesn't exist
+          mkdir -p ./dist/public
+          
           # Create 404.html
           cat > ./dist/public/404.html << 'EOL'
           <!DOCTYPE html>
@@ -50,8 +53,6 @@ jobs:
               <title>CodeMate - Redirecting</title>
               <script>
                 // Single Page Apps for GitHub Pages
-                // This script takes the current url and converts the path and query
-                // string into just a query string, and then redirects the browser
                 var pathSegmentsToKeep = 1;
                 var l = window.location;
                 l.replace(
@@ -72,27 +73,35 @@ jobs:
           # Create .nojekyll file
           touch ./dist/public/.nojekyll
           
-          # Modify index.html for SPA routing
+          # Modify index.html for SPA routing if it exists
           INDEX_FILE="./dist/public/index.html"
           if [[ -f "$INDEX_FILE" ]]; then
-            # Insert SPA redirect script after <head> tag
-            REDIRECT_SCRIPT='<!-- Start Single Page Apps for GitHub Pages -->
-            <script>
-              (function(l) {
-                if (l.search[1] === "/") {
-                  var decoded = l.search.slice(1).split("&").map(function(s) { 
-                    return s.replace(/~and~/g, "&")
-                  }).join("?");
-                  window.history.replaceState(null, null,
-                    l.pathname.slice(0, -1) + decoded + l.hash
-                  );
-                }
-              }(window.location))
-            </script>
-            <!-- End Single Page Apps for GitHub Pages -->'
+            # Create a temporary file for the modified content
+            TEMP_FILE=$(mktemp)
             
-            # Use sed to insert the script after the <head> tag
-            sed -i "s|<head>|<head>\n$REDIRECT_SCRIPT|" "$INDEX_FILE"
+            # Add the SPA redirect script after the head tag
+            awk '/<head>/ {
+              print $0;
+              print "<!-- Start Single Page Apps for GitHub Pages -->";
+              print "<script>";
+              print "  (function(l) {";
+              print "    if (l.search[1] === \"/\") {";
+              print "      var decoded = l.search.slice(1).split(\"&\").map(function(s) {";
+              print "        return s.replace(/~and~/g, \"&\")";
+              print "      }).join(\"?\");";
+              print "      window.history.replaceState(null, null,";
+              print "        l.pathname.slice(0, -1) + decoded + l.hash";
+              print "      );";
+              print "    }";
+              print "  }(window.location))";
+              print "</script>";
+              print "<!-- End Single Page Apps for GitHub Pages -->";
+              next;
+            }
+            { print $0 }' "$INDEX_FILE" > "$TEMP_FILE"
+            
+            # Replace the original file with the modified one
+            mv "$TEMP_FILE" "$INDEX_FILE"
             echo "Added SPA redirect script to index.html"
           else
             echo "Warning: Could not find index.html at $INDEX_FILE"
